@@ -53,8 +53,8 @@ enum class eStateID : uint8
 	MOVE,
 	ATTK,
 	DEAD,
-	/*TARGET,
-	RETURN,*/
+	TARGET,
+	RETURN,
 };
 
 UENUM(BlueprintType)

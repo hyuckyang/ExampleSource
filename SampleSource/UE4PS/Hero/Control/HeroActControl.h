@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/Camera/CoreCameraControl.h"
+#include "Materials/Material.h"
 #include "HeroActControl.generated.h"
 
 class AHeroActCharacter;
@@ -17,6 +18,8 @@ class UE4PS_API AHeroActControl : public ACoreCameraControl
 	GENERATED_BODY()
 
 public:
+	
+	AHeroActControl();
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -40,17 +43,18 @@ public:
 
 	// 컨트롤 타입 변경
 	void SetControlTypeSwap();
-
-	// 
-	void SetHeroSelected(AHeroActCharacter* hero);
 	//
+	void SetHeroSelected(AHeroActCharacter* hero);
+	
 
-
+protected :
+	
+	AHeroActCharacter*	 GetTargetHero();
+	
 protected:
 
-	//
-	AHeroActCharacter* GetTargetHero();
-	//
 	UFieldWindowUWidget* m_FieldWindow;
-	
+	UDecalComponent*	 m_DecalToCursur;
+
+	//bool				 m_bMoveKeyHasPressed = false;
 };

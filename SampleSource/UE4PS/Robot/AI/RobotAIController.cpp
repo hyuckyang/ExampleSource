@@ -1,43 +1,70 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "RobotAIController.h"
-#include "Robot/Act/RobotActCharacter.h"
 #include "Common/PSGameInstance.h"
-#include "BehaviorTree/BlackboardComponent.h"
+#include "Goal/PSFixedGoalToProtect.h"
+#include "Robot/Act/RobotActCharacter.h"
+
+/*
+AI Include;
+*/
 #include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
-void ARobotAIController::BeginPlay()
+/*
+
+*/
+ARobotAIController::ARobotAIController(const class FObjectInitializer& objectinitializer) : Super(objectinitializer)
 {
-	Super::BeginPlay();
+	m_RobotBTComp = objectinitializer.CreateDefaultSubobject<UBehaviorTreeComponent>(this, TEXT("RobotBTComp"));
+	m_RobotBBComp = objectinitializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("RobotBBComp"));
+}
 
-	// 등록할 블랙보드 데이터가 없으면 null
-	if (m_RobotBBData == nullptr)
+/*
+*/
+void ARobotAIController::Possess(class APawn* pawn)
+{
+	Super::Possess(pawn);
+
+	ARobotActCharacter* robot = Cast<ARobotActCharacter>(pawn);
+	if (robot)
 	{
-		// UE_LOG(LogClass, Log, TEXT("m_RobotBBData nullptr"));
-		return;
+		if (robot->m_RobotAIBT == nullptr) return;
+
+		m_RobotBBComp->InitializeBlackboard(*(robot->m_RobotAIBT->BlackboardAsset));
+		m_RobotBTComp->StartTree(*(robot->m_RobotAIBT));
 	}
-
- 	bool bBBSet = UseBlackboard(m_RobotBBData, m_RobotBBComp);
-	if (!bBBSet) return;
-
-
-	
-	/*m_RobotCharacter = Cast<ARobotActCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
-	if (m_RobotCharacter == nullptr)
-	{
-		UE_LOG(LogClass, Log, TEXT("m_RobotCharacter nullptr"));
-		return;
-	}*/
-		
-	if (m_RobotBHTree == nullptr) return;
-	this->RunBehaviorTree(m_RobotBHTree);
-
-	UE_LOG(LogClass, Log, TEXT("RunBehaviorTree ok"));
 }
 
-void ARobotAIController::Tick(float DeltaTime) 
+/*
+
+*/
+void ARobotAIController::UnPossess()
 {
-	Super::Tick(DeltaTime);
+	Super::UnPossess();
+
+	m_RobotBTComp->StopTree();
 }
 
+/*
 
+*/
+void ARobotAIController::SetMoveToGoalVector(FVector goalVector)
+{
+	if (m_RobotBBComp != nullptr)
+	{
+		m_RobotBBComp->SetValueAsVector(FName("MoveToGoalVector"), goalVector);
+	}
+}
+
+/*
+
+*/
+void ARobotAIController::SetMoveToHeroActor(class APawn* heroActor)
+{
+	if (m_RobotBBComp != nullptr)
+	{
+		m_RobotBBComp->SetValueAsObject(FName("HeroActor"), heroActor);
+	}
+}

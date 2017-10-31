@@ -2,24 +2,24 @@
 
 #include "HeroActCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Components/DecalComponent.h"
 #include "Manager/PSActorManager.h"
 #include "Hero/Act/HeroActState.h"
-#include "Materials/Material.h"
+#include "Core/Act/CoreActSight.h"
+#include "Hero/Weapon/HeroGunWeapon.h"
+//
 
-AHeroActCharacter::AHeroActCharacter() :Super()
+AHeroActCharacter::AHeroActCharacter() : Super()
 {
-	/*m_CursurToDecal = CreateDefaultSubobject<UDecalComponent>("CursurToDecal");
-	m_CursurToDecal->SetupAttachment(RootComponent);
-	static ConstructorHelpers::FObjectFinder<UMaterial> CursurDecalMatAsset(TEXT("Material'/Game/A_Sample/Core/M_CursorPoint.M_CursorPoint'"));
-	if (CursurDecalMatAsset.Succeeded()) m_CursurToDecal->SetDecalMaterial(CursurDecalMatAsset.Object);*/
-	//m_TargetToDecal = CreateDefaultSubobject<UDecalComponent>("TargetToDecal");
-	//m_TargetToDecal->SetupAttachment(RootComponent/*, FName("head_TargetedPoint")*/);
-	//static ConstructorHelpers::FObjectFinder<UMaterial> TargetDecalMatAsset(TEXT("Material'/Game/A_Sample/Core/M_TargetPoint.M_TargetPoint'"));
-	//if (TargetDecalMatAsset.Succeeded()) m_TargetToDecal->SetDecalMaterial(TargetDecalMatAsset.Object);
-	//m_TargetToDecal->DecalSize = FVector(16.0f, 32.0f, 32.0f);
-	//m_TargetToDecal->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f).Quaternion());
-	//FindComponentByClass<USkeletalMeshComponent>()
+	// Weapon -- 
+	/*static ConstructorHelpers::FClassFinder<UClass> heroWeapon(TEXT("Blueprint'/Game/A_Sample/Hero/Weapon/BP_HeroGunWeapon.BP_HeroGunWeapon_C'"));
+	if (heroWeapon.Succeeded() == false) { UE_LOG(LogClass, Log, TEXT("heroWeapon not Find"));  return; }*/
+
+	/*static ConstructorHelpers::FObjectFinder<UBlueprint> heroWeapon(TEXT("Blueprint'/Game/A_Sample/Hero/Weapon/BP_HeroGunWeapon.BP_HeroGunWeapon'"));;
+	if (heroWeapon.Succeeded() == false) { UE_LOG(LogClass, Log, TEXT("heroWeapon not Find"));  return; }*/
+
 	
 }
 
@@ -34,6 +34,7 @@ void AHeroActCharacter::BeginPlay()
 	m_ControlID = eHeorControlID::AUTO;
 	
 	m_SightDist = 200.f;
+	m_Sight->SetSightDistance(m_SightDist);
 
 	this->RandomCustomizing();
 	this->RandomNames();
@@ -42,12 +43,20 @@ void AHeroActCharacter::BeginPlay()
 	// USkeletalMeshComponent* skel = FindComponentByClass<USkeletalMeshComponent>();
 	//
 
-	//m_TargetToDecal->SetWorldLocation(USceneComponent::GetSocketLocation(""));
+	m_PointSMMesh = FindComponentByClass<UStaticMeshComponent>();
+	if (m_PointSMMesh != nullptr) m_PointSMMesh->SetVisibility(false);
 
-	this->AddState(eStateID::IDLE, NewObject<UHeroActIdleState>());
-	this->AddState(eStateID::MOVE, NewObject<UHeroActMoveState>());
 
-	this->ChangeState(eStateID::IDLE);
+	UClass* bpGC	= LoadObject<UBlueprintGeneratedClass>(nullptr, TEXT("Blueprint'/Game/A_Sample/Hero/Weapon/BP_HeroGunWeapon.BP_HeroGunWeapon_C'"));
+	m_GunWeapon		= this->GetWorld()->SpawnActor<AHeroGunWeapon>(bpGC->GetDefaultObject()->GetClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+	m_GunWeapon		->AttachRootComponentTo(m_SKMesh, FName(TEXT("rHandGripPoint")));
+	m_GunWeapon		->SetActorRotation(GetActorRotation());
+
+
+	AddState(eStateID::IDLE, NewObject<UHeroActIdleState>());
+	AddState(eStateID::MOVE, NewObject<UHeroActMoveState>());
+
+	ChangeState(eStateID::IDLE);
 	
 }
 
@@ -55,6 +64,14 @@ void AHeroActCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	
+	/*if (m_SKMesh != nullptr) 
+	{
+		FVector hudLocate; 
+		GetHudSocketLoaction(hudLocate);
+		m_DecalToTarget->SetWorldLocation(hudLocate);
+	}*/
+	
 	//FVector vec3 = this->GetActorLocation();
 	
 }
@@ -91,8 +108,15 @@ void AHeroActCharacter::SetHeroControlID(eHeorControlID controlID)
 		ChangeState(eStateID::IDLE);
 	}
 	m_ControlID = controlID;
+}
 
-	
+/*
+..
+*/
+void AHeroActCharacter::SetSelected(bool bVisible)
+{
+	if (m_PointSMMesh == nullptr) return;
+	m_PointSMMesh->SetVisibility(bVisible, true);
 }
 
 /*
@@ -116,3 +140,12 @@ void AHeroActCharacter::RandomNames()
 	}
 }
 
+/*
+..
+*/
+void AHeroActCharacter::OnFire()
+{
+	if (m_GunWeapon == nullptr)return;
+
+	m_GunWeapon->OnFire();
+}

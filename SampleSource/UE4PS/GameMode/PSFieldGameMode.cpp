@@ -14,7 +14,6 @@ void APSFieldGameMode::BeginPlay()
 	//
 	SetViewFadeOut(5.f);
 
-	
 	m_HeroControl = Cast<AHeroActControl>(m_psGameInstance->GetCamaraControlActor());
 	if (m_HeroControl == nullptr) return;
 
@@ -24,13 +23,23 @@ void APSFieldGameMode::BeginPlay()
 	// 임시로 0번째 객체를 컨트롤 객체로 초기화 함
 	AHeroActCharacter* heroActor = m_psActorManager->GetHeroActor(0);
 	m_HeroControl->SetHeroSelected(heroActor);
-
 	
+
 }
 
 void APSFieldGameMode::Tick(float DeltaTime) 
 {
 	Super::Tick(DeltaTime);
+
+	if(ticks != -1)
+		ticks++;
+
+	if (ticks > 15)
+	{
+		m_psGameInstance->OnWaveCreateRobots(-1);
+		ticks = -1;
+	}
+	
 }
 
 void APSFieldGameMode::SetFieldWindow()

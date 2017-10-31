@@ -6,9 +6,8 @@
 #include "AIController.h"
 #include "RobotAIController.generated.h"
 
-class ARobotActCharacter;
 /**
- * 
+ UE4 SurvivalGame Sample -> Zombie AI 를 참조하였습니다.
  */
 UCLASS()
 class UE4PS_API ARobotAIController : public AAIController
@@ -16,18 +15,20 @@ class UE4PS_API ARobotAIController : public AAIController
 	GENERATED_BODY()
 	
 public:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
 
-	// Black Board 등록 / 이후 블랙보드 및 트리는 블루프린트 . 음..
-	UPROPERTY(EditAnywhere)
-	UBlackboardData* m_RobotBBData;
+	//
+	ARobotAIController(const class FObjectInitializer&  objectInitalizer);
+
+	// 컨트롤 동기화
+	virtual void Possess(class APawn* pawn) override;
+	virtual void UnPossess() override;
 	
-	UPROPERTY(EditAnywhere)
-	UBehaviorTree* m_RobotBHTree;
+	void SetMoveToGoalVector(FVector goalVector);
+	void SetMoveToHeroActor(class APawn* heroActor);
 
 protected:
-	//
-	UBlackboardComponent* m_RobotBBComp;
-	ARobotActCharacter*	  m_RobotCharacter;
+
+	class UBehaviorTreeComponent*	m_RobotBTComp;
+	class UBlackboardComponent*		m_RobotBBComp;
+
 };

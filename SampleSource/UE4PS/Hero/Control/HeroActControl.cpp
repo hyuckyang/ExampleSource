@@ -7,6 +7,19 @@
 #include "Hero/Act/HeroActCharacter.h"
 #include "UMG/Window/FieldWindowUWidget.h"
 
+/*
+
+*/
+AHeroActControl::AHeroActControl() : Super()
+{
+	m_DecalToCursur = CreateDefaultSubobject<UDecalComponent>("TargetToDecal");
+	m_DecalToCursur->SetupAttachment(RootComponent);
+	static ConstructorHelpers::FObjectFinder<UMaterial> CursurDecalMatAsset(TEXT("Material'/Game/A_Sample/Core/M_TargetPoint.M_TargetPoint'"));
+	if (CursurDecalMatAsset.Succeeded()) m_DecalToCursur->SetDecalMaterial(CursurDecalMatAsset.Object);
+	//m_DecalToCursur->setsca
+
+	m_DecalToCursur->DecalSize = FVector(16.0f, 32.0f, 32.0f);
+}
 
 /*
 
@@ -55,6 +68,15 @@ void AHeroActControl::Tick(float DeltaTime)
 		FRotator rotator = FRotationMatrix::MakeFromX(TraceResult.Location - GetTargetHero()->GetActorLocation()).Rotator();
 		this->GetTargetHero()->SetActorRotation(FRotator(0.f, rotator.Yaw, 0.f));
 	}
+
+	// TEST TARGET
+	FHitResult TraceHitResult;
+	this->m_pController->GetHitResultUnderCursor(ECC_Visibility, true, TraceHitResult);
+	FVector CursorFV = TraceHitResult.ImpactNormal;
+	FRotator CursorR = CursorFV.Rotation();
+	m_DecalToCursur->SetWorldLocation(TraceHitResult.Location);
+	m_DecalToCursur->SetWorldRotation(CursorR);
+
 }
 
 /*
@@ -66,7 +88,7 @@ void AHeroActControl::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	this->InputComponent->BindAction("MouseWheelUp",	IE_Pressed,  this, &AHeroActControl::InputMouseWheelUp);
 	this->InputComponent->BindAction("MouseWheelDown",	IE_Pressed,  this, &AHeroActControl::InputMouseWheelDown);
-	this->InputComponent->BindAction("MouseLClick",		IE_Pressed, this, &AHeroActControl::InputMouseLClickPressed);
+	this->InputComponent->BindAction("MouseLClick",		IE_Pressed,  this, &AHeroActControl::InputMouseLClickPressed);
 	this->InputComponent->BindAction("MouseLClick",		IE_Released, this, &AHeroActControl::InputMouseLClickReleased);
 	this->InputComponent->BindAction("MouseRClick",		IE_Pressed,  this, &AHeroActControl::InputMouseRClickPressed);
 	this->InputComponent->BindAction("MouseRClick",		IE_Released, this, &AHeroActControl::InputMouseRClickReleased);
@@ -104,10 +126,16 @@ void AHeroActControl::InputMouseLClickPressed()
 
 void AHeroActControl::InputMouseLClickReleased()
 {
-	if (m_ControlID == eCameraControlID::FREE)
+	/*if (m_ControlID == eCameraControlID::FREE)
 	{
 
-	}
+	}*/
+
+	if (GetTargetHero() == nullptr) return;
+
+	GetTargetHero()->OnFire();
+	
+	
 }
 
 void AHeroActControl::InputMouseRClickPressed()
@@ -154,18 +182,19 @@ void AHeroActControl::InputSpaceClickReleased()
 
 
 #pragma region Input Axis
-void AHeroActControl::InputKeyBoardForward(float deltaTime) 
+void AHeroActControl::InputKeyBoardForward(float deltaTick)
 {
-	
-	if (m_ControlID == eCameraControlID::FREE) { this->m_TargetLocation = this->GetActorLocation(); OnMoveForward(deltaTime); return; }
+
+
+	if (m_ControlID == eCameraControlID::FREE) { this->m_TargetLocation = this->GetActorLocation(); OnMoveForward(deltaTick); return; }
 	//	
 	if (m_ControlID == eCameraControlID::TARGET) 
 	{
-		GetTargetHero()->SetMoveForward(deltaTime);
+		GetTargetHero()->SetMoveForward(deltaTick);
 
 		//FVector dir = FRotationMatrix(m_pCamera->GetComponentRotation()).GetScaledAxis(EAxis::X);
 		FVector dir = FRotationMatrix(GetTargetHero()->GetActorRotation()).GetScaledAxis(EAxis::X);
-		GetTargetHero()->AddMovementInput(dir, deltaTime * 20.f);
+		GetTargetHero()->AddMovementInput(dir, deltaTick * 20.f);
 
 		// 이동 상태가 되어야 함
 		//GetTargetHero()->ChangeState(eStateID::MOVE);
@@ -173,17 +202,18 @@ void AHeroActControl::InputKeyBoardForward(float deltaTime)
 	
 }
 
-void AHeroActControl::InputKeyBoardRight(float deltaTime)
+void AHeroActControl::InputKeyBoardRight(float deltaTick)
 {
-	if (m_ControlID == eCameraControlID::FREE) { this->m_TargetLocation = this->GetActorLocation(); OnMoveRight(deltaTime); return;	}
+
+	if (m_ControlID == eCameraControlID::FREE) { this->m_TargetLocation = this->GetActorLocation(); OnMoveRight(deltaTick); return;	}
 	//
 	if (m_ControlID == eCameraControlID::TARGET)
 	{
-		GetTargetHero()->SetMoveRight(deltaTime);
+		GetTargetHero()->SetMoveRight(deltaTick);
 
 		//FVector dir = FRotationMatrix(m_pCamera->GetComponentRotation()).GetScaledAxis(EAxis::Y);
 		FVector dir = FRotationMatrix(GetTargetHero()->GetActorRotation()).GetScaledAxis(EAxis::Y);
-		GetTargetHero()->AddMovementInput(dir, deltaTime * 20.f);
+		GetTargetHero()->AddMovementInput(dir, deltaTick * 20.f);
 
 		// 이동 상태가 되어야 함
 		//GetTargetHero()->ChangeState(eStateID::MOVE);
@@ -191,18 +221,18 @@ void AHeroActControl::InputKeyBoardRight(float deltaTime)
 	
 }
 
-void AHeroActControl::InputMouseX(float deltaTime) 
+void AHeroActControl::InputMouseX(float deltaTick)
 {
-	if (deltaTime == 0.f) return;
-	if (m_ControlID == eCameraControlID::FREE) { this->m_TargetLocation = this->GetActorLocation(); OnRotatePitch(deltaTime); return; }
+	if (deltaTick == 0.f) return;
+	if (m_ControlID == eCameraControlID::FREE) { this->m_TargetLocation = this->GetActorLocation(); OnRotatePitch(deltaTick); return; }
 	//	
 	if (m_ControlID == eCameraControlID::TARGET) { }
 }
 
-void AHeroActControl::InputMouseY(float deltaTime)
+void AHeroActControl::InputMouseY(float deltaTick)
 {
-	if (deltaTime == 0.f) return;
-	if (m_ControlID == eCameraControlID::FREE) { this->m_TargetLocation = this->GetActorLocation(); OnRotateYaw(deltaTime); return; }
+	if (deltaTick == 0.f) return;
+	if (m_ControlID == eCameraControlID::FREE) { this->m_TargetLocation = this->GetActorLocation(); OnRotateYaw(deltaTick); return; }
 	//	
 	if (m_ControlID == eCameraControlID::TARGET) { }
 }
@@ -255,6 +285,7 @@ void AHeroActControl::SetHeroSelected(AHeroActCharacter* hero)
 	if (GetTargetHero() != nullptr) 
 	{
 		GetTargetHero()->SetHeroControlID(eHeorControlID::AUTO);
+		GetTargetHero()->SetSelected(false);
 	}
 
 	eHeorControlID heroControl = m_ControlID == eCameraControlID::TARGET ?
@@ -268,6 +299,7 @@ void AHeroActControl::SetHeroSelected(AHeroActCharacter* hero)
 
 	m_ActorManager->SetControlHeroActor(hero);
 	hero->SetHeroControlID(heroControl);
+	hero->SetSelected(true);
 
 	//  UI 업데이트
 	if (m_FieldWindow == nullptr)

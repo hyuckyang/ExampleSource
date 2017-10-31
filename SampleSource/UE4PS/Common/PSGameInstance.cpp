@@ -32,11 +32,14 @@ void UPSGameInstance::CreateManagerObeject()
 
 void UPSGameInstance::OnWaveCreateRobots(int waveNumber) 
 {
-	if(m_FieldCreatePoints.Num() == 0) return;
+	if (m_FieldCreatePoints.Num() == 0) return;
+
 
 	for (int loop = 0, max = m_FieldCreatePoints.Num(); loop < max; loop++)
 	{
 		m_FieldCreatePoints[loop]->CreateRobots(waveNumber);
+
+		
 	}
 
 

@@ -33,6 +33,7 @@ public:
 	Hero -
 	*/
 	//
+	void AddToCharacter(ACoreActCharacter* core);
 	void AddToHero(AHeroActCharacter* hero);
 	//
 	AHeroActCharacter* GetControlHeroActor();

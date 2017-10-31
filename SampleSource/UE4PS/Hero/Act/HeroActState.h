@@ -6,6 +6,7 @@
 #include "Core/Act/CoreActState.h"
 #include "HeroActState.generated.h"
 
+class AHeroActControl;
 class AHeroActCharacter;
 /**
  * 
@@ -16,14 +17,21 @@ class UE4PS_API UHeroActState : public UCoreActState
 	GENERATED_BODY()
 
 public:
+	void OnExecute(eStateID eState, void* arg1 = nullptr, void* arg2 = nullptr);
+
 	virtual void SetCharacter(ACoreActCharacter* character);
 	virtual void LoopToUserControl() {};
 
 protected:
+	AHeroActControl*	m_HeroControl;
 	AHeroActCharacter*  m_HeroActor;
+	
 	
 };
 
+/*
+ *
+ */
 UCLASS()
 class UE4PS_API UHeroActIdleState : public UHeroActState
 {
@@ -37,7 +45,9 @@ public:
 	
 };
 
-
+/*
+ *
+ */
 UCLASS()
 class UE4PS_API UHeroActMoveState : public UHeroActState
 {

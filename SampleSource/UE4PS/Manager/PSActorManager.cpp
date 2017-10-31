@@ -23,10 +23,18 @@ void UPSActorManager::SetPSGameInstance(UPSGameInstance* instance)
 /*
 
 */
+void UPSActorManager::AddToCharacter(ACoreActCharacter* core)
+{
+	GiveToUniqueID(core);
+}
+
+/*
+
+*/
 void UPSActorManager::AddToHero(AHeroActCharacter* hero)
 {
 	// 유니크 아이디 부여
-	GiveToUniqueID((ACoreActCharacter*)(hero));
+	AddToCharacter((ACoreActCharacter*)(hero));
 
 	if (m_HeroActors.Contains(hero) != true)
 	{

@@ -27,4 +27,6 @@ protected:
 	 
 	AHeroActControl*	 m_HeroControl;
 	UFieldWindowUWidget* m_FieldWindow;
+
+	int ticks = 0;
 };

@@ -18,7 +18,7 @@ public:
 	virtual void BeginPlay() override;
 	void CreateRobots(int waveNumber = -1);
 
-	void testcreatefunc();
-	FTimerHandle inoutHandle;
+	/*void testcreatefunc();
+	FTimerHandle inoutHandle;*/
 	
 };

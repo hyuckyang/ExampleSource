@@ -6,6 +6,7 @@
 #include "Manager/PSActorManager.h"
 #include "AI/Navigation/NavigationSystem.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ACoreActCharacter::ACoreActCharacter()
 {
@@ -28,7 +29,7 @@ void ACoreActCharacter::BeginPlay()
 	UClass* bpGC = LoadObject<UBlueprintGeneratedClass>(nullptr, TEXT("Blueprint'/Game/A_Sample/Core/BP_CoreActSight.BP_CoreActSight_C'"));
 	if (bpGC != nullptr)
 	{
-		this->m_Sight = this->GetWorld()->SpawnActor<ACoreActSight>(Cast<ACoreActSight>(bpGC->GetDefaultObject())->GetClass(), this->GetActorLocation(), this->GetActorRotation());
+		this->m_Sight = this->GetWorld()->SpawnActor<ACoreActSight>(bpGC->GetDefaultObject()->GetClass(), this->GetActorLocation(), this->GetActorRotation());
 		this->m_Sight->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
 		this->m_Sight->SetCharacter(this);
 	}
@@ -37,12 +38,15 @@ void ACoreActCharacter::BeginPlay()
 	params.AddIgnoredActor(this);
 
 	m_SKMesh = FindComponentByClass<USkeletalMeshComponent>();
-	if (m_SKMesh == nullptr) { UE_LOG(LogClass, Log, TEXT("m_SKMesh nullptr")); return; }
+	if (m_SKMesh == nullptr) { return; }
 
+	m_CHMoveComp = FindComponentByClass<UCharacterMovementComponent>();
+	if (m_CHMoveComp == nullptr) { return; }
 
-	//m_SKMesh->GetSocketLocation(TEXT(""));
-	/*m_SKHudSocket = m_SKMesh->GetSocketByName(FName("head_TargetedPoint"));
-	if (m_SKHudSocket == nullptr) { UE_LOG(LogClass, Log, TEXT("m_SKHudSocket nullptr")); return; }*/
+	//
+	m_CHMoveComp->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = false;
+	
 }
 
 void ACoreActCharacter::Tick(float DeltaTime)
@@ -73,6 +77,8 @@ void ACoreActCharacter::AddState(eStateID stateID, UCoreActState * state)
 	}
 
 	m_StateMap.Add(stateID, state);
+
+	m_StateMap[stateID]->SetPSGameInstance(m_PSGameInstance);
 	m_StateMap[stateID]->SetCharacter(this);
 	m_StateMap[stateID]->SetStateID(stateID);
 }
@@ -160,9 +166,3 @@ bool ACoreActCharacter::GetHudSocketLoaction(FVector& locate)
 	return true;
 }
 
-
-void ACoreActCharacter::OnTickBPGetActorLocation(FVector vec3)
-{
-	m_BPActorLocation = vec3;
-	//
-}

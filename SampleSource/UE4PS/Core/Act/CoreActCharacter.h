@@ -8,6 +8,7 @@
 #include "Core/Act/CoreActState.h"
 #include "CoreActCharacter.generated.h"
 
+class UCharacterMovementComponent;
 class USkeletalMeshComponent;
 class UPSGameInstance;
 class UPSActorManager;
@@ -31,7 +32,6 @@ public:
 	// 유니크 아이디 
 	void  SetUniqueID(int32 uqID) { m_UniqueID = uqID; }
 	int32 GetUniqueID() { return m_UniqueID; }
-
 
 	// 상태 추가
 	virtual void AddState(eStateID stateID, UCoreActState* state);
@@ -61,8 +61,10 @@ public:
 	bool IsEnermy(ACoreActCharacter* other) { return other->m_TeamID != this->m_TeamID ? true : false; }
 
 	//
-	//const USkeletalMeshSocket* GetMeshHudSocket() { return m_SKHudSocket; }
 	bool GetHudSocketLoaction(FVector& locate);
+
+	//
+	virtual void SetSelected(bool bVisible) {}
 
 
 	// 도착해야 할 백터
@@ -96,23 +98,23 @@ public:
 	float m_ReturnDist = 0.f;*/
 
 	// 
-	void  SetMoveForward(float value) { this->m_MoveForward = value; }
-	void  SetMoveRight(float value) { this->m_MoveRight = value; }
+	void  SetMoveForward(float value) { m_MoveDir.X = value; }
+	void  SetMoveRight(float value) { m_MoveDir.Y = value; }
 	//
 	
-	UFUNCTION(BlueprintCallable, Category = "Core | Character")
-	float GetMoveForward() { return this->m_MoveForward; }
+	FVector2D GetMoveDir() { return m_MoveDir; }
 
 	UFUNCTION(BlueprintCallable, Category = "Core | Character")
-	float GetMoveRight() { return this->m_MoveRight; }
+	float GetMoveForward() { return m_MoveDir.X; }
 
-	// Test
 	UFUNCTION(BlueprintCallable, Category = "Core | Character")
-	void OnTickBPGetActorLocation(FVector vec3);
+	float GetMoveRight() { return m_MoveDir.Y; }
+
 
 protected:
 	USkeletalMeshComponent*			m_SKMesh;
 	//const USkeletalMeshSocket*		m_SKHudSocket;
+	UCharacterMovementComponent*	m_CHMoveComp;
 
 	UCoreActState*					m_CurState;
 	TMap<eStateID, UCoreActState*>	m_StateMap;
@@ -132,7 +134,7 @@ protected:
 	float							m_MoveForward = 0.f;
 	float							m_MoveRight = 0.f;;
 
-	// Test
-	FVector							m_BPActorLocation = FVector::ZeroVector;
+	// KeyBoard 
+	FVector2D						m_MoveDir = FVector2D::ZeroVector;
 
 };

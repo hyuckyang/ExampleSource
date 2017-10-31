@@ -17,7 +17,7 @@ class UE4PS_API ACoreActSight : public AActor
 	GENERATED_BODY()
 	
 public:	
-	ACoreActSight();
+	ACoreActSight(const class FObjectInitializer& initializer);
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
@@ -38,6 +38,7 @@ public:
 	//
 	ACoreActCharacter* GetNearCharacter();
 
+	bool IsInSightToCharacter(ACoreActCharacter* act);
 
 protected:
 

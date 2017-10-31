@@ -4,25 +4,28 @@
 #include "Core/Act/CoreActCharacter.h"
 
 
-ACoreActSight::ACoreActSight()
+ACoreActSight::ACoreActSight(const class FObjectInitializer& initializer) : Super(initializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	this->RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Comp"));
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Comp"));
 
-	this->m_CollierSight = CreateDefaultSubobject<USphereComponent>(TEXT("Collider Sight"));
-	this->m_CollierSight->SetSphereRadius(1.f);
-	this->m_CollierSight->AttachToComponent(this->RootComponent, FAttachmentTransformRules::KeepWorldTransform);
-	this->m_CollierSight->bGenerateOverlapEvents = true; // 충돌처리 True
+	m_CollierSight = CreateDefaultSubobject<USphereComponent>(TEXT("Collider Sight"));
+	m_CollierSight->SetSphereRadius(1.f);
+	m_CollierSight->AttachToComponent(this->RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+	m_CollierSight->bGenerateOverlapEvents = true; // 충돌처리 True
 
+	m_CollierSight->OnComponentBeginOverlap.AddDynamic(this, &ACoreActSight::OnInColliderBeginOverlap);
+	m_CollierSight->OnComponentEndOverlap.AddDynamic(this, &ACoreActSight::OnInColliderEndOverlap);
 	//
-	this->m_CollierSight->OnComponentBeginOverlap.AddDynamic(this, &ACoreActSight::OnInColliderBeginOverlap);
-	this->m_CollierSight->OnComponentEndOverlap.AddDynamic(this, &ACoreActSight::OnInColliderEndOverlap);
+	
 }
 
 void ACoreActSight::BeginPlay()
 {
 	Super::BeginPlay();
+
+	
 	
 }
 
@@ -37,6 +40,9 @@ void ACoreActSight::SetCharacter(ACoreActCharacter* character)
 	this->m_MineCharacter = character;
 	// 설정된 인지거리에 따른 Sphere 크기를 설정함
 	this->m_CollierSight->SetSphereRadius(this->m_MineCharacter->m_SightDist);
+	
+	//
+	//this->m_CollierSight->IgnoreActorWhenMoving
 }
 
 /*
@@ -73,8 +79,12 @@ bool ACoreActSight::IsAttackCharacter()
 */
 ACoreActCharacter* ACoreActSight::GetNearCharacter() 
 {
+	// 객체가 없으면.
+	if (m_MineCharacter == nullptr) return nullptr;
+
 	// 시야에 객체 없으면 
 	if (m_InRangeSightActs.Num() == 0) return nullptr;
+	
 	ACoreActCharacter* current = nullptr;
 	//
 	float nearDist = m_MineCharacter->m_SightDist;
@@ -97,20 +107,35 @@ ACoreActCharacter* ACoreActSight::GetNearCharacter()
 void ACoreActSight::OnInColliderBeginOverlap(UPrimitiveComponent* overlappedComp, AActor* otherActor, 
 					UPrimitiveComponent* otherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweeppResult)
 {
+
+	if (m_MineCharacter == nullptr) return;
+
 	ACoreActCharacter* character = Cast<ACoreActCharacter>(otherActor);
 	if (character == nullptr) return;
-	//
+	
+
+	//  
+	if (m_MineCharacter->GetUniqueID() == character->GetUniqueID()) return;
+
 	if (m_InRangeSightActs.Find(character) > -1) return;
 	//
+
 	m_InRangeSightActs.Add(character);
+
+	/*if (m_MineCharacter == nullptr) 
+	{
+		UE_LOG(LogClass, Log, TEXT("m_InRangeSightActs add %s -- mainCharacter nullptr  "), *(character->GetName())); return;
+	}
+	UE_LOG(LogClass, Log, TEXT("m_InRangeSightActs add %s -- mainCharacter - %s "), *(character->GetName()), *(m_MineCharacter->GetName()));*/
 }
 
 /*
-
 */
 void ACoreActSight::OnInColliderEndOverlap(UPrimitiveComponent* overlappedComp, AActor* otherActor,
 					UPrimitiveComponent* otherComp, int32 otherBodyIndex)
 {
+	if (m_MineCharacter == nullptr) return ;
+
 	ACoreActCharacter* character = Cast<ACoreActCharacter>(otherActor);
 	if (character == nullptr) return;
 	//
@@ -118,4 +143,17 @@ void ACoreActSight::OnInColliderEndOverlap(UPrimitiveComponent* overlappedComp, 
 	if (m_InRangeSightActs.Find(character, idx) == false) return;
 	//
 	m_InRangeSightActs.RemoveAt(idx);
+}
+
+/*
+ 현재 시야 안에 파라미터로 넘겨온 캐릭터가 있는지 확인
+*/
+bool ACoreActSight::IsInSightToCharacter(ACoreActCharacter* act)
+{
+	bool checkCore =  m_InRangeSightActs.ContainsByPredicate([act](ACoreActCharacter* ele)
+	{
+		return (ele->GetUniqueID() == act->GetUniqueID());
+	});
+	
+	return checkCore;
 }

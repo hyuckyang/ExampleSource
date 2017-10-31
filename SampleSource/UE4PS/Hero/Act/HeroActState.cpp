@@ -1,11 +1,22 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HeroActState.h"
+#include "Common/PSGameInstance.h"
 #include "Hero/Act/HeroActCharacter.h"
+#include "Hero/Control/HeroActControl.h"
 
 /**
  기본 
 **/
+void UHeroActState::OnExecute(eStateID state, void* arg1, void* arg2)
+{
+	Super::OnExecute(state, arg1, arg2);
+
+	//
+	m_HeroControl = Cast<AHeroActControl>(m_psInstance->GetCamaraControlActor());
+
+}
+
 void UHeroActState::SetCharacter(ACoreActCharacter* character)
 {
 	Super::SetCharacter(character);
@@ -21,24 +32,15 @@ void UHeroActIdleState::OnExecute(eStateID state, void* arg1, void* arg2)
 {
 	Super::OnExecute(state, arg1, arg2);
 
-	m_HeroActor->SetMoveForward(0.f);
-	m_HeroActor->SetMoveRight(0.f);
+	//UE_LOG(LogClass, Log, TEXT("OnExecute Idle State"));
+
+	m_HeroActor->SetMoveForward(0.f); m_HeroActor->SetMoveRight(0.f);
 }
 
 void UHeroActIdleState::OnLoop()
 {
 	Super::OnLoop();
 	LoopToUserControl();
-
-	/*if (m_HeroActor == nullptr)return;
-	if (m_HeroActor->GetVelocity().IsZero() == false)
-	{
-		m_HeroActor->ChangeState(eStateID::MOVE);
-		return;
-	}*/
-	
-
-
 }
 
 void UHeroActIdleState::OnExit(eStateID state)
@@ -53,15 +55,17 @@ void UHeroActIdleState::LoopToUserControl()
 	switch (m_HeroActor->GetHeroControlID())
 	{
 	case eHeorControlID::MANUAL :
+		
+		if (!m_HeroActor->GetMoveDir().IsZero())
+		{
+			m_HeroActor->ChangeState(eStateID::MOVE);
+		}
 
 		break;
 	case eHeorControlID::SEMI_AUTO:
 
 		break;
 	case eHeorControlID::AUTO:
-
-		// 타겟 검사
-
 		break;
 	}
 
@@ -73,17 +77,25 @@ void UHeroActIdleState::LoopToUserControl()
 void UHeroActMoveState::OnExecute(eStateID state, void* arg1, void* arg2)
 {
 	Super::OnExecute(state, arg1, arg2);
+
+	//UE_LOG(LogClass, Log, TEXT("OnExecute Run State"));
 }
 
 void UHeroActMoveState::OnLoop()
 {
 	Super::OnLoop();
 
-	/*if (m_HeroActor == nullptr)return;
-	if (m_HeroActor->GetVelocity().IsZero())
+	//if (m_HeroActor == nullptr)return;
+	//if (m_HeroActor->GetVelocity().IsZero())
+	//{
+	//	//UE_LOG(LogClass, Log, TEXT("Change Run To Idle"));
+	//	m_HeroActor->ChangeState(eStateID::IDLE);
+	//}
+
+	if (m_HeroActor->GetMoveDir().IsZero())
 	{
 		m_HeroActor->ChangeState(eStateID::IDLE);
-	}*/
+	}
 
 }
 

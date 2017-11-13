@@ -28,13 +28,24 @@ public:
 	virtual void NativeConstruct();
 	virtual void NativeTick(const FGeometry& gometry, float deltaTime);
 	
+	/*void SetPSGameInstance(UPSGameInstance* instance) { this->m_psGameInstance = instance; }
+	void SetPSWidgetManager(UPSWidgetManager* wdmanager) { this->m_psWidgetManager = wdmanager; }*/
+	
 	void AddToCharacterInfo(ACoreActCharacter* character);
 	void AddToParentPanel(UPanelWidget* panel);
+
+	// SGUI Plugins ÂüÁ¶
+	bool SetPositionFromWorld(FVector vec3, UCanvasPanelSlot* slot = nullptr, FVector2D pivot = FVector2D::ZeroVector);
+
+	void ToDamageShow(int32 damageValue);
+
 protected:
 	
-	//UPanelWidget*			m_ParentPanel;
+	class UPSGameInstance*	m_psGameInstance		= nullptr;
+	class UPSWidgetManager*	m_psWidgetManager		= nullptr;
+
+	UPanelWidget*			m_ParentPanel;
 	UCanvasPanelSlot*		m_CanvasSlot;
-	/*UPanelSlot*				m_PanelSlot;*/
 	UTextBlock*				m_ActNameTxt;
 
 	//
@@ -43,8 +54,5 @@ protected:
 	
 	FVector					m_ActHudLocate;
 	FVector2D				m_ScreenVec2Pos;
-
-
-
 	
 };

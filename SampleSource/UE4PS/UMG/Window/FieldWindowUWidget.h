@@ -11,6 +11,7 @@
 
 class UActHudBar;
 class UTapSelectHeroInfoItem;
+class ACoreActCharacter;
 class AHeroActCharacter;
 /**
  * 
@@ -30,6 +31,10 @@ public:
 	void AddToHeroInfo(AHeroActCharacter* hero);
 
 	void SelectToHeroInfo(int32 uniqueID);
+	
+	// 머리 위에 HudBar 부여
+	void GiveToHeadBar(ACoreActCharacter* core);
+	
 public :
 	
 	UPanelWidget*	m_hudPanel;

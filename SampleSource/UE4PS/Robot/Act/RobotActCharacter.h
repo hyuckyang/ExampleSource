@@ -7,7 +7,6 @@
 #include "Core/Act/CoreActCharacter.h"
 #include "RobotActCharacter.generated.h"
 
-
 /**
  * 
  */
@@ -19,7 +18,15 @@ class UE4PS_API ARobotActCharacter : public ACoreActCharacter
 	class ARobotAIController*		m_RAIController	= nullptr;
 	class APSFixedGoalToProtect*	m_GoalActor		= nullptr;
 
-	// class ACoreActCharacter*		m_heroActor		= nullptr;
+	FTimerHandle					m_TimeHandleAttackMontage;
+	float							m_TimeHandleSec	= 0.f;
+
+private:
+
+	// UFUNCTION();
+	void PlayAttackAnimLoop();
+
+	//void PlayAttackAnimLoop_Implementation();
 
 public :
 
@@ -32,10 +39,22 @@ public :
 	void SetGoalActor(APSFixedGoalToProtect* goalActor) { this->m_GoalActor = goalActor; }
 	APSFixedGoalToProtect* GetGoalActor() { return this->m_GoalActor; }
 
+	//
 	ARobotAIController*  GetRobotAIContol() { return this->m_RAIController; }
+
+	// АјАн
+	void PlayAttackAnimStart();
+	void PlayAttackAnimStop();
+	
+	//
+	virtual void OnDeath();
+
 public:
 
-	UPROPERTY(EditDefaultsOnly, Category = "RobotAI")
+	UPROPERTY(EditDefaultsOnly, Category = "Robot | Montage")
+	UAnimMontage*		m_RobotAttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Robot | AI")
 	class UBehaviorTree* m_RobotAIBT;
 	
 };

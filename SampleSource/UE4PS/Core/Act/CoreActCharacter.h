@@ -8,6 +8,8 @@
 #include "Core/Act/CoreActState.h"
 #include "CoreActCharacter.generated.h"
 
+DECLARE_DELEGATE_OneParam(ReceiveDamageDelegate, int32);
+
 class UCharacterMovementComponent;
 class USkeletalMeshComponent;
 class UPSGameInstance;
@@ -22,6 +24,7 @@ class UE4PS_API ACoreActCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	ReceiveDamageDelegate m_receiveDamageDele;
 public:
 	
 	ACoreActCharacter();
@@ -55,7 +58,7 @@ public:
 	bool IsInSight(AActor* actors);
 
 	// 팀 설정
-	void SetTeamID(eTeamID team) { this->m_TeamID = team; }
+	void SetTeamID(eActorTypeID team) { this->m_ActorTypeID = team; }
 
 	// 현재 타겟이 적인지 아닌지.
 	bool IsEnermy(ACoreActCharacter* other) { return other->m_TeamID != this->m_TeamID ? true : false; }
@@ -65,15 +68,11 @@ public:
 
 	//
 	virtual void SetSelected(bool bVisible) {}
+	virtual void ReceivedAttackDamage(int32 damageValue) { m_receiveDamageDele.ExecuteIfBound(damageValue); }
 
-
-	// 도착해야 할 백터
-	//void SetTargetLocate(FVector locate) { this->m_TargetLocate = locate; }
-	//FVector GetTargetLocate() { return this->m_TargetLocate; }
-
-	//// 다시 돌아갈 백터
-	//void SetReturnLocate(FVector locate) { this->m_ReturnLocate = locate; }
-	//FVector GetReturnLocate() { return this->m_ReturnLocate; }
+	/*void ReceiveDamageFuncBind(UObject* obj, void (ACoreActCharacter::*funcPoint)(int32)) { m_receiveDamageDele.BindUObject(obj, funcPoint); }*/
+	template<typename T>
+	void ReceiveDamageFuncBind(UObject* obj, void (T::*funcPoint)(int32)) { m_receiveDamageDele.BindUObject(Cast<T>(obj), funcPoint); }
 
 	// 기타 값 가져오기
 	UFUNCTION(BlueprintCallable, Category = "Core | Character")
@@ -81,6 +80,29 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Core | Character")
 	eTeamID  GetCurrentTeamID() { return this->m_TeamID; }
+
+	UFUNCTION(BlueprintCallable, Category = "Core | Character")
+	eActorTypeID  GetCurrentActorTypeID() { return this->m_ActorTypeID; }
+
+	void  SetMoveForward(float value) { m_MoveDir.X = value; }
+	void  SetMoveRight(float value) { m_MoveDir.Y = value; }
+	
+	FVector2D GetMoveDir() { return m_MoveDir; }
+
+	UFUNCTION(BlueprintCallable, Category = "Core | Character")
+	float GetMoveForward() { return m_MoveDir.X; }
+
+	UFUNCTION(BlueprintCallable, Category = "Core | Character")
+	float GetMoveRight() { return m_MoveDir.Y; }
+
+	// TArray<ACoreActCharacter*> GetPosibleAttackedActList();
+
+	virtual void OnDeath() {}
+
+	void OnDeathToRagDollActive(FVector bounceDir = FVector::ZeroVector);
+	void OnDeathToParticle();
+
+public:
 
 	UPROPERTY(EditAnywhere)
 	ACoreActSight* m_Sight;
@@ -93,23 +115,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	float m_AttackDist = 0.f;
 
-	// 타겟까지 얼마만큼 갈 것인지.
-	/*UPROPERTY(EditAnywhere)
-	float m_ReturnDist = 0.f;*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death | Particle")
+	UParticleSystem*			m_DeathParticle;
 
-	// 
-	void  SetMoveForward(float value) { m_MoveDir.X = value; }
-	void  SetMoveRight(float value) { m_MoveDir.Y = value; }
-	//
-	
-	FVector2D GetMoveDir() { return m_MoveDir; }
-
-	UFUNCTION(BlueprintCallable, Category = "Core | Character")
-	float GetMoveForward() { return m_MoveDir.X; }
-
-	UFUNCTION(BlueprintCallable, Category = "Core | Character")
-	float GetMoveRight() { return m_MoveDir.Y; }
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death | Sound")
+	class USoundcue*			m_DeathSoundCue;
 
 protected:
 	USkeletalMeshComponent*			m_SKMesh;
@@ -119,6 +129,7 @@ protected:
 	UCoreActState*					m_CurState;
 	TMap<eStateID, UCoreActState*>	m_StateMap;
 
+	eActorTypeID					m_ActorTypeID = eActorTypeID::NONE;
 	eTeamID							m_TeamID = eTeamID::NONE;
 
 	// GameInstance;

@@ -4,6 +4,7 @@
 #include "Core/Act/CoreActSight.h"
 #include "Common/PSGameInstance.h"
 #include "Manager/PSActorManager.h"
+#include "Components/CapsuleComponent.h"
 #include "AI/Navigation/NavigationSystem.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -11,8 +12,6 @@
 ACoreActCharacter::ACoreActCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;	
-
-	//m_SKMesh = 
 }
 
 void ACoreActCharacter::BeginPlay()
@@ -160,9 +159,48 @@ bool ACoreActCharacter::GetHudSocketLoaction(FVector& locate)
 {
 	if (m_SKMesh == nullptr) return false;
 
-	//locate = m_SKMesh->GetSocketLocation(TEXT("head_TargetedPoint"));
-	locate = GetActorLocation();
-	//UE_LOG(LogClass, Log, TEXT("OnTickBPGetActorLocation locate X, %f, locate Y, %f locate Z, %f"), locate.X, locate.Y, locate.Z);
+	FVector head = locate = m_SKMesh->GetSocketLocation(TEXT("head_TargetedPoint"));
+	locate = head;
+
+	
 	return true;
 }
 
+void ACoreActCharacter::OnDeathToRagDollActive(FVector bounceDir)
+{
+	// ??  요소 공부 필요.
+	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	CapsuleComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+
+	//
+
+
+	SetActorEnableCollision(true);
+
+	m_SKMesh->SetAllBodiesSimulatePhysics(true);
+	m_SKMesh->SetSimulatePhysics(true);
+	m_SKMesh->WakeAllRigidBodies();
+	m_SKMesh->bBlendPhysics = true;
+
+	m_SKMesh->SetCollisionProfileName(TEXT("Ragdoll"));
+
+	UCharacterMovementComponent* CharacterComp = Cast<UCharacterMovementComponent>(GetMovementComponent());
+	if (CharacterComp)
+	{
+		CharacterComp->StopMovementImmediately();
+		CharacterComp->DisableMovement();
+		CharacterComp->SetComponentTickEnabled(false);
+	}
+}
+
+void ACoreActCharacter::OnDeathToParticle()
+{
+
+}
+
+//TArray<ACoreActCharacter*> ACoreActCharacter::GetPosibleAttackedActList() 
+//{
+//	if (m_Sight == nullptr)return nullptr;
+//	return m_Sight->GetPossibleAttackActList();
+//}

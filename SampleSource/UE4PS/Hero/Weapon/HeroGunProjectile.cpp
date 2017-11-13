@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HeroGunProjectile.h"
+#include "Core/Act/CoreActCharacter.h"
 
 
 /*
@@ -10,81 +11,63 @@ AHeroGunProjectile::AHeroGunProjectile()
 {
  	PrimaryActorTick.bCanEverTick = true;
 
-	//m_ProjectileMoveComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMoveComp"));
-	////m_ProjectileMoveComp->UpdatedComponent = RootComponent;
-	//m_ProjectileMoveComp->InitialSpeed = 1000.0f;
-	//m_ProjectileMoveComp->MaxSpeed = 1000.0f;
-	//m_ProjectileMoveComp->bRotationFollowsVelocity = true;
-	//m_ProjectileMoveComp->ProjectileGravityScale = 0.f;
+	//RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Comp"));
 
-	//m_ProjectileMoveComp->Velocity = GetVelocity() * 500.f;
+	m_SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("Collider Sight"));
+	m_SphereCollision->SetSphereRadius(1.f);
+	//m_SphereCollision->AttachToComponent(this->RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+	m_SphereCollision->bGenerateOverlapEvents = true; // 충돌처리 True
 
-	m_SphereCollision = FindComponentByClass<USphereComponent>();
-	if (m_SphereCollision == nullptr) { UE_LOG(LogClass, Log, TEXT("USphereComponent nullptr")); }
-	else { UE_LOG(LogClass, Log, TEXT("USphereComponent not nullptr")); }
-	//m_ProjectileMoveComp = 
-	
-	
+	m_SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AHeroGunProjectile::OnInColliderBeginOverlap);
+
+	RootComponent = m_SphereCollision;
 }
-
-//ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMesh0"));
-//ProjectileMesh->SetStaticMesh(ProjectileMeshAsset.Object);
-//ProjectileMesh->SetupAttachment(RootComponent);
-//ProjectileMesh->BodyInstance.SetCollisionProfileName("Projectile");
-//ProjectileMesh->OnComponentHit.AddDynamic(this, &ATweenShootSampleProjectile::OnHit);		// set up a notification for when this component hits something
-//RootComponent = ProjectileMesh;
-//
-//// Use a ProjectileMovementComponent to govern this projectile's movement
-//ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement0"));
-//ProjectileMovement->UpdatedComponent = ProjectileMesh;
-//ProjectileMovement->InitialSpeed = 3000.f;
-//ProjectileMovement->MaxSpeed = 3000.f;
-//ProjectileMovement->bRotationFollowsVelocity = true;
-//ProjectileMovement->bShouldBounce = false;
-//ProjectileMovement->ProjectileGravityScale = 0.f; // No gravity
-//
-//												  // Die after 3 seconds by default
-//InitialLifeSpan = 3.0f;
 
 
 void AHeroGunProjectile::BeginPlay()
 {
 	Super::BeginPlay();	
 
-	/*m_SphereCollision = FindComponentByClass<USphereComponent>();
-	if (m_SphereCollision == nullptr) return;
-
-
-	m_ProjectileMoveComp = FindComponentByClass<UProjectileMovementComponent>();
-	if (m_ProjectileMoveComp == nullptr) return;*/
-
-	//m_ProjectileMoveComp->Velocity = GetVelocity() * 1000.0f;
-
-	m_SphereCollision = FindComponentByClass<USphereComponent>();
-	if (m_SphereCollision == nullptr) return;
-
-	m_ProjectileMoveComp = FindComponentByClass<UProjectileMovementComponent>();
-	if (m_ProjectileMoveComp == nullptr) return;
-
-	//m_ProjectileMoveComp->SetUpdatedComponent(m_SphereCollision);
-	//m_ProjectileMoveComp->Velocity = m_ShootVelocity * m_ProjectileMoveComp->InitialSpeed;
-
+	SetLifeSpan(3.f);
 }
 
 void AHeroGunProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// ??
+	FVector fwVec3 = GetActorLocation() + GetActorForwardVector();
+	SetActorRelativeLocation(fwVec3);
 }
 
 void AHeroGunProjectile::SetProjectileVelocity(const FVector& velocityValue)
 {
 	m_ShootVelocity = velocityValue;
-
-	m_ProjectileMoveComp->Velocity = m_ShootVelocity * m_ProjectileMoveComp->InitialSpeed;
 	
-	//SetActorRotation(velocityValue);
-	
-
+	//if (m_ProjectileMoveComp == nullptr) m_ProjectileMoveComp = FindComponentByClass<UProjectileMovementComponent>();
+	////m_ProjectileMoveComp->Velocity = m_ShootVelocity * m_ProjectileMoveComp->InitialSpeed;
+	//m_ProjectileMoveComp->SetVelocityInLocalSpace(m_ShootVelocity * m_ProjectileMoveComp->InitialSpeed);
 
 }
 
+
+
+void AHeroGunProjectile::OnInColliderBeginOverlap(class UPrimitiveComponent* overlappedComp, class AActor* otherActor, class UPrimitiveComponent* otherComp,
+	int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweeppResult)
+{
+	if (m_MineCoreAct && otherActor )
+	{
+		ACoreActCharacter* coreAct = Cast<ACoreActCharacter>(otherActor);
+		if (coreAct != nullptr) 
+		{
+			if (m_MineCoreAct->IsEnermy(coreAct)) 
+			{
+				coreAct->ReceivedAttackDamage(1);
+
+				coreAct->OnDeath();
+			}
+		}
+	}
+
+	Destroy();
+}

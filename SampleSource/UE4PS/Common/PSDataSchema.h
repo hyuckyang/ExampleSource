@@ -28,6 +28,8 @@ public:
 	}
 };
 
+
+
 UENUM(BlueprintType)
 enum class eCameraControlID : uint8
 {
@@ -52,13 +54,13 @@ enum class eStateID : uint8
 	IDLE,
 	MOVE,
 	ATTK,
-	DEAD,
+	DEATH,
 	TARGET,
 	RETURN,
 };
 
 UENUM(BlueprintType)
-enum class eTeamID : uint8
+enum class eActorTypeID : uint8
 {
 	NONE  = 0,
 	HERO  = 1,   // 
@@ -67,6 +69,14 @@ enum class eTeamID : uint8
 	// 해킹된 상태의 로봇
 	// HACKED_ROBOT = HERO,
 	MAX = 3
+};
+
+UENUM(BlueprintType)
+enum class eTeamID : uint8
+{
+	NONE = 0,
+	BLUE,
+	DARK,
 };
 
 UENUM(BlueprintType)

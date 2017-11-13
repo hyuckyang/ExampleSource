@@ -40,6 +40,7 @@ public:
 
 	bool IsInSightToCharacter(ACoreActCharacter* act);
 
+	TArray<ACoreActCharacter*> GetPossibleAttackActList() { return m_InRangeAttackActs; }
 protected:
 
 	// 에디터 에서만 참조 - BP 는 그냥 참조

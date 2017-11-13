@@ -1,19 +1,24 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ActHudBar.h"
-#include "Common/PSDataSchema.h"
-#include "Core/Act/CoreActCharacter.h"
-#include "PSPlayerController.h"
+#include "Runtime/UMG/Public/Blueprint/WidgetLayoutLibrary.h"
+#include "Runtime/Engine/Classes/Engine/UserInterfaceSettings.h"
 
+#include "Common/PSDataSchema.h"
+#include "Common/PSGameInstance.h"
+#include "Core/Act/CoreActCharacter.h"
+#include "Hero/Act/HeroActCharacter.h"
+#include "PSPlayerController.h"
+#include "Manager/PSWidgetManager.h"
+#include "UMG/Item/HudEffectText.h"
 /*
 
 */
 void UActHudBar::NativeConstruct()
 {
 	//
-	//m_psPlayerController = getfirst
-
-	UE_LOG(LogClass, Log, TEXT("NativeConstruct"));
+	Super::NativeConstruct();
+	
 }
 
 /*
@@ -21,9 +26,10 @@ void UActHudBar::NativeConstruct()
 */
 void UActHudBar::NativeTick(const FGeometry& gometry, float deltaTime)
 {
-	
+	Super::NativeTick(gometry, deltaTime);
+
 	if (m_ActCharacter == nullptr) return;
-	if (m_ActCharacter->GetCurrentStateID() == eStateID::DEAD) 
+	if (m_ActCharacter->GetCurrentStateID() == eStateID::DEATH)
 	{
 		// 캐릭터가 죽었을 때. 객체 삭제 혹은 Disable
 		return;
@@ -33,47 +39,78 @@ void UActHudBar::NativeTick(const FGeometry& gometry, float deltaTime)
 
 	//
 	// 테스트
-	bool bVisible = GetWorld()->GetFirstPlayerController()->
-		ProjectWorldLocationToScreen(m_ActHudLocate, m_ScreenVec2Pos);
+	/*bool bVisible = GetWorld()->GetFirstPlayerController()->
+		ProjectWorldLocationToScreen(m_ActHudLocate, m_ScreenVec2Pos);*/
 
 	if (m_CanvasSlot == nullptr)return;
 
-	m_CanvasSlot->SetPosition(m_ScreenVec2Pos);
+	//m_ActHudLocate += FVector(0.f, 60.f, 0.f);
 
-	m_ActNameTxt->SetVisibility(ESlateVisibility::Visible);
-
-	//if (m_PanelSlot == nullptr)return;
-
-	
-	/*m_PanelSlot->Parent->setposition*/
-	//SetPosition
-	//postion
-	//SetPositionInViewport(m_ScreenVec2Pos);
-	/*SetVisibility(ESlateVisibility::Visible);
-
-	switch (GetVisibility())
+	if (SetPositionFromWorld(m_ActHudLocate, m_CanvasSlot)) 
 	{
-	case ESlateVisibility::Collapsed:
-	case ESlateVisibility::Hidden:
-		UE_LOG(LogClass, Log, TEXT("HUD BAR DISABLE"));
-		break;
-	default:
-		UE_LOG(LogClass, Log, TEXT("HUD BAR VISIBLE"));
-		break;
+		m_ActNameTxt->SetVisibility(ESlateVisibility::Visible);
 	}
-	UE_LOG(LogClass, Log, TEXT("NativeTick"));*/
-	//SetVisibility(bVisible == true ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
+	else
+	{
+		m_ActNameTxt->SetVisibility(ESlateVisibility::Hidden);
+	}
 
+	SetVisibility(ESlateVisibility::Visible);
+
+}
+
+/*
+ SGUI Plugins 를 참조하였습니다.
+*/
+bool UActHudBar::SetPositionFromWorld(FVector vec3, UCanvasPanelSlot* slot, FVector2D pivot)
+{
+	if (m_ActCharacter == nullptr) return false;
+	if (slot == nullptr) return false;
+
+	FVector2D screenPos;
+
+	bool isInVPort = GetWorld()->GetFirstPlayerController()->
+		ProjectWorldLocationToScreen(vec3, screenPos);
+
+	screenPos += FVector2D(-60.f, 0.f);
+
+	FVector2D viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+	if (slot)
+	{
+		float vpScale = GetDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass())->GetDPIScaleBasedOnSize(FIntPoint(viewportSize.X, viewportSize.Y));
+		slot->SetPosition(screenPos / vpScale);
+
+	}
+	/*else
+	{
+		
+	}*/
+
+	return isInVPort;
 }
 
 /*
 
 */
-//void UActHudBar::SetPSGameInstance(UPSGameInstance* instance)
-//{
-//	m_psGameInstance = instance; 
-//	m_psGameInstance->Getwo
-//}
+void UActHudBar::ToDamageShow(int32 damageValue) 
+{
+	UE_LOG(LogClass, Log, TEXT("DAMAEE MINE %s"), *(m_ActNameTxt->Text.ToString()));
+
+	UClass* cls = m_psWidgetManager->GetBlueprintClass(TEXT("/Game/A_Sample/UMG/Item"), TEXT("BP_DamageText"));
+	if (cls == nullptr) return;
+
+	UUserWidget* widget = CreateWidget<UUserWidget>(m_psGameInstance->GetWorld(), cls);
+	if (widget == nullptr) return;
+
+	UHudEffectText* effecttext = CreateWidget<UHudEffectText>(m_psGameInstance->GetWorld(), cls);
+
+	
+	UCanvasPanelSlot* canvasSlot = Cast<UCanvasPanelSlot>(m_ParentPanel->AddChild(effecttext));
+	//UCanvasPanelSlot* canvasSlot = Cast<UCanvasPanelSlot>(m_ParentPanel->AddChild(effecttext));
+
+	FVector2D vec2d = m_CanvasSlot->GetPosition() + FVector2D(-20.f, 0.f);
+	canvasSlot->SetPosition(vec2d);
+}
 
 /*
 
@@ -83,12 +120,32 @@ void UActHudBar::AddToCharacterInfo(ACoreActCharacter* character)
 	if (m_ActNameTxt == nullptr)
 		m_ActNameTxt = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Name_TBlock")));
 
-	//m_ActNameTxt->SetText(FText::FromString())
+	if (character->GetCurrentActorTypeID() == eActorTypeID::HERO) 
+	{
+		AHeroActCharacter* hero = Cast<AHeroActCharacter>(character);
+		if (hero != nullptr) 
+		{
+			m_ActNameTxt->SetText(FText::FromString(hero->GetName()));
+		}
+	}
+	else
+	{
+		m_ActNameTxt->SetText(FText::GetEmpty());
+	}
+
+	//
+	character->ReceiveDamageFuncBind(this, &UActHudBar::ToDamageShow);
+	//
+
+	m_psGameInstance = Cast<UPSGameInstance>(character->GetGameInstance());
+	m_psWidgetManager = m_psGameInstance->GetWidgetManager();
+
 	m_ActCharacter = character;
 }
 
 void UActHudBar::AddToParentPanel(UPanelWidget* panel)
 {
+	m_ParentPanel = panel;
 	m_CanvasSlot = Cast<UCanvasPanelSlot>(panel->AddChild(this));
 }
 

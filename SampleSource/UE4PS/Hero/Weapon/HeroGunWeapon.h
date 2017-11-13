@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Core/Act/CoreActCharacter.h"
 #include "HeroGunWeapon.generated.h"
 
-class USkeletalMeshComponent;
+
+//class USkeletalMeshComponent;
 class AHeroGunProjectile;
 
 UCLASS()
@@ -20,10 +22,21 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
+	void SetCoreCharcter(ACoreActCharacter* coreCharcter) { m_MineCoreAct = coreCharcter; }
 	void OnFire();
+
+public:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect | Particle")
+	UParticleSystem*			m_MuzzleParticle;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect | Sound")
+	class USoundcue*				m_MuzzleFireSound;
 
 protected:
 
-	USkeletalMeshComponent* m_SKMesh;
+	class USkeletalMeshComponent*	m_SKMesh;
+	class ACoreActCharacter*		m_MineCoreAct;
+
 
 };

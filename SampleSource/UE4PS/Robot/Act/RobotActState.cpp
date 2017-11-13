@@ -42,7 +42,7 @@ void URobotActIdleState::OnLoop()
 	
 	if (m_RobotActor->GetGoalActor() != nullptr) 
 	{
-		UE_LOG(LogClass, Log, TEXT("Change From MoveState"));
+		//(LogClass, Log, TEXT("Change From MoveState"));
 		m_RobotActor->ChangeState(eStateID::MOVE);
 	}
 }
@@ -60,7 +60,7 @@ void URobotActMoveState::OnExecute(eStateID eState, void* arg1, void* arg2)
 {
 	Super::OnExecute(eState, arg1, arg2);
 	
-	UE_LOG(LogClass, Log, TEXT("Init MoveState"));
+	//UE_LOG(LogClass, Log, TEXT("Init MoveState"));
 
 	// AI 컨트롤에 넘긴다.
 	m_RobotAIControl->SetMoveToGoalVector(m_RobotActor->GetGoalActor()->GetActorLocation());
@@ -90,15 +90,21 @@ void URobotActTargetState::OnExecute(eStateID eState, void* arg1, void* arg2)
 {
 	Super::OnExecute(eState, arg1, arg2);
 
-	UE_LOG(LogClass, Log, TEXT("Initt targetState"));
-	
-
 	if (arg1 != nullptr) 
 	{
 		targetActor = (ACoreActCharacter*)arg1;
 	}
 
-	focusVec3 = m_RobotActor->GetActorLocation();
+	// 이미 돌아갈 로테이션이 정해져 있다면. 없으면 현재 위치를 돌아갈 장소로. 
+	if (arg2 != nullptr)
+	{
+		focusVec3 = *((FVector*)arg2);
+	}
+	else
+	{
+		focusVec3 = m_RobotActor->GetActorLocation();
+	}
+
 	m_RobotAIControl->SetMoveToHeroActor((class APawn*)targetActor);
 	
 
@@ -113,7 +119,7 @@ void URobotActTargetState::OnLoop()
 	float dist = FVector::Distance(m_RobotActor->GetActorLocation(), focusVec3);
 
 	// 800.f 임시
-	if (dist > 800.f || targetActor->GetCurrentStateID() == eStateID::DEAD)
+	if (dist > 800.f || targetActor->GetCurrentStateID() == eStateID::DEATH)
 	{
 		// 타겟에 가기 직전에 저장된 포커스 위치와 거리가 450. 거리만큼 멀어지거나.
 		// 타겟 이 죽었으면 그냥 다시 리턴 합니다.
@@ -123,9 +129,13 @@ void URobotActTargetState::OnLoop()
 		return;
 	}
 	//
-	if (dist < m_RobotActor->m_AttackDist)
+
+	// 타겟과 공격 가능 거리 만큼 가까워 졌다면.
+	// 160. 도는 임시 입니다.
+	dist = FVector::Distance(m_RobotActor->GetActorLocation(), targetActor->GetActorLocation());
+	if (dist < m_RobotActor->m_AttackDist /*&& m_RobotActor->IsInAngle(targetActor, 160.f)*/)
 	{
-		// 공격할 수 있는 거리만큼 가까워졌다면..
+		m_RobotActor->ChangeState(eStateID::ATTK, targetActor, &focusVec3);
 	}
 	
 }
@@ -133,6 +143,8 @@ void URobotActTargetState::OnLoop()
 void URobotActTargetState::OnExit(eStateID state)
 {
 	Super::OnExit(state);
+
+	targetActor = nullptr;
 }
 
 /**
@@ -142,7 +154,7 @@ void URobotActReturnState::OnExecute(eStateID eState, void* arg1, void* arg2)
 {
 	Super::OnExecute(eState, arg1, arg2);
 
-	UE_LOG(LogClass, Log, TEXT("Initt ReturnState"));
+	//UE_LOG(LogClass, Log, TEXT("Initt ReturnState"));
 
 	if (arg1 != nullptr) returnToLocate = *((FVector*)arg1);
 	if (arg2 != nullptr) targetActor = (ACoreActCharacter*)arg2;
@@ -163,27 +175,104 @@ void URobotActReturnState::OnLoop()
 		// 타겟을 쫒기 직전 위치까지 갔다면
 		m_RobotActor->ChangeState(eStateID::MOVE);
 
-		UE_LOG(LogClass, Log, TEXT("dist < 5.f"));
+		//UE_LOG(LogClass, Log, TEXT("dist < 5.f"));
 		return;
 	}
 	
 	// 타겟 액터가 없거나, 혹은 죽은 상태라면 아래 시야체크 검사는 하지 않는다.
-	if (targetActor == nullptr || targetActor->GetCurrentStateID() == eStateID::DEAD) return;
+	if (targetActor == nullptr || targetActor->GetCurrentStateID() == eStateID::DEATH) return;
 	
 	// 리턴 중 타겟이 시야에서 사라지면 
 	// 그냥 다시 무브로 넘어거 골로 간다.
 	if (targetActor->m_Sight->IsInSightToCharacter(targetActor))
 	{
 		m_RobotActor->ChangeState(eStateID::MOVE);
-
-		UE_LOG(LogClass, Log, TEXT("IsInSightToCharacter "));
 		return;
 	}	
-
-	UE_LOG(LogClass, Log, TEXT("dist < %f"), dist);
 }
 
 void URobotActReturnState::OnExit(eStateID state)
 {
 	Super::OnExit(state);
+
+	targetActor = nullptr;
+}
+
+/**
+ Attack
+**/
+void URobotActAttackState::OnExecute(eStateID eState, void* arg1, void* arg2)
+{
+	Super::OnExecute(eState, arg1, arg2);
+	if (arg1 != nullptr) targetActor = (ACoreActCharacter*)arg1;
+	if (arg2 != nullptr) returnToLocate = m_RobotActor->GetActorLocation();
+
+	m_RobotActor->PlayAttackAnimStart();
+}
+
+void URobotActAttackState::OnLoop()
+{
+	Super::OnLoop();
+
+	if (targetActor == nullptr) return;
+
+	float dist = FVector::Distance(m_RobotActor->GetActorLocation(), returnToLocate);
+	if (dist > 800.f || targetActor->GetCurrentStateID() == eStateID::DEATH)
+	{
+		// 함수화.. 
+		// 돌아가라..
+
+	
+
+		m_RobotActor->ChangeState(eStateID::RETURN, &returnToLocate, targetActor);
+		m_RobotAIControl->SetMoveToHeroActor(nullptr);
+
+		
+		return;
+	}
+
+	// 다시 멀어지면 타겟상태로.
+	dist = FVector::Distance(m_RobotActor->GetActorLocation(), targetActor->GetActorLocation());
+	if (dist > m_RobotActor->m_AttackDist)
+	{
+		
+		m_RobotActor->ChangeState(eStateID::TARGET, targetActor, &returnToLocate);
+		
+		return;
+
+	}
+
+}
+
+void URobotActAttackState::OnExit(eStateID state)
+{
+	Super::OnExit(state);
+
+	m_RobotActor->PlayAttackAnimStop();
+}
+
+/**
+ DEATH
+**/
+void URobotActDeathState::OnExecute(eStateID eState, void* arg1, void* arg2)
+{
+	Super::OnExecute(eState, arg1, arg2);
+
+	m_RobotActor->OnDeathToRagDollActive();
+	
+}
+
+void URobotActDeathState::OnLoop()
+{
+	Super::OnLoop();
+}
+
+void URobotActDeathState::OnExit(eStateID state)
+{
+	Super::OnExit(state);
+}
+
+void URobotActDeathState::OnRobotDestroy()
+{
+
 }

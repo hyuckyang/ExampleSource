@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Core/Act/CoreActCharacter.h"
 #include "HeroGunProjectile.generated.h"
 
 /*
@@ -22,12 +23,21 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void SetProjectileVelocity(const FVector& velocityValue);
+	void SetCoreCharcter(ACoreActCharacter* coreCharcter) { m_MineCoreAct = coreCharcter; }
 
+	UFUNCTION()
+	void OnInColliderBeginOverlap(UPrimitiveComponent* overlappedComp, AActor* otherActor, UPrimitiveComponent* otherComp,
+									int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweeppResult);
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USphereComponent*				m_SphereCollision;
+
+	
 protected:
 
 	UProjectileMovementComponent*	m_ProjectileMoveComp;
-	USphereComponent*				m_SphereCollision;
-
 	FVector							m_ShootVelocity;
 
+	ACoreActCharacter*				m_MineCoreAct;
 };

@@ -27,6 +27,7 @@ void ARobotAIController::Possess(class APawn* pawn)
 {
 	Super::Possess(pawn);
 
+	return;
 	ARobotActCharacter* robot = Cast<ARobotActCharacter>(pawn);
 	if (robot)
 	{

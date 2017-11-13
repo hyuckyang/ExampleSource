@@ -8,6 +8,14 @@
 #include "Robot/Act/RobotActState.h"
 #include "Robot/AI/RobotAIController.h"
 
+//
+#include "Public/TimerManager.h"
+#include "Components/SkeletalMeshComponent.h"
+
+// 애니메이션.
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "Animation/AnimNotifies/AnimNotifyState.h"
 
 
 void ARobotActCharacter::BeginPlay()
@@ -28,10 +36,22 @@ void ARobotActCharacter::BeginPlay()
 	m_SightDist = 550.f;
 	m_Sight->SetSightDistance(m_SightDist);
 
+
+	if (m_RobotAttackMontage != nullptr) 
+	{
+		m_TimeHandleSec = m_RobotAttackMontage->SequenceLength;
+	}
+
+	m_ActorTypeID = eActorTypeID::ROBOT;
+	m_TeamID = eTeamID::DARK;
+
 	AddState(eStateID::IDLE,	NewObject<URobotActIdleState>());
 	AddState(eStateID::MOVE,	NewObject<URobotActMoveState>());
 	AddState(eStateID::TARGET,	NewObject<URobotActTargetState>());
 	AddState(eStateID::RETURN,	NewObject<URobotActReturnState>());
+	AddState(eStateID::ATTK,	NewObject<URobotActAttackState>());
+	AddState(eStateID::DEATH,   NewObject<URobotActDeathState>());
+
 
 	ChangeState(eStateID::IDLE);
 }
@@ -64,4 +84,39 @@ void ARobotActCharacter::ChangeState(eStateID stateID, void * arg1, void * arg2)
 
 	this->m_CurState = state;
 	this->m_CurState->OnExecute(oldState, arg1, arg2);
+}
+
+/*
+ Animation 
+*/
+void ARobotActCharacter::PlayAttackAnimLoop()
+{
+	PlayAnimMontage(this->m_RobotAttackMontage);
+
+	
+}
+
+void ARobotActCharacter::PlayAttackAnimStart()
+{
+	// 멈추고 초기화
+	m_TimeHandleAttackMontage.Invalidate();
+
+	PlayAttackAnimLoop();
+
+	GetWorldTimerManager().SetTimer(m_TimeHandleAttackMontage, this, &ARobotActCharacter::PlayAttackAnimLoop, m_TimeHandleSec, true);
+	
+}
+
+void ARobotActCharacter::PlayAttackAnimStop()
+{
+	GetWorldTimerManager().ClearTimer(m_TimeHandleAttackMontage);
+	StopAnimMontage();
+}
+
+void ARobotActCharacter::OnDeath()
+{
+	// 이미 죽은 상태라면. .. 
+	if (this->GetCurrentStateID() == eStateID::DEATH) return;
+	
+	ChangeState(eStateID::DEATH);
 }

@@ -6,7 +6,6 @@
 #include "Core/Act/CoreActState.h"
 #include "RobotActState.generated.h"
 
-	  
 class ARobotActCharacter;
 class ARobotAIController;
 class APSFixedGoalToProtect;
@@ -80,8 +79,8 @@ public:
 };
 
 /*
-*
-*/
+ *
+ */
 UCLASS()
 class UE4PS_API URobotActReturnState : public URobotActState
 {
@@ -98,17 +97,37 @@ public:
 	void OnExit(eStateID eState);
 };
 
-///*
-// *
-// */
-//UCLASS()
-//class UE4PS_API URobotActAttackState : public URobotActState
-//{
-//	GENERATED_BODY()
-//
-//
-//public:
-//	void OnExecute(eStateID eState, void* arg1 = nullptr, void* arg2 = nullptr);
-//	void OnLoop();
-//	void OnExit(eStateID eState);
-//};
+/*
+ *
+ */
+UCLASS()
+class UE4PS_API URobotActAttackState : public URobotActState
+{
+	GENERATED_BODY()
+
+	ACoreActCharacter* targetActor;
+
+	// 다시 돌아가야 할..
+	FVector returnToLocate;
+
+public:
+	void OnExecute(eStateID eState, void* arg1 = nullptr, void* arg2 = nullptr);
+	void OnLoop();
+	void OnExit(eStateID eState);
+};
+
+/*
+ *
+ */
+UCLASS()
+class UE4PS_API URobotActDeathState : public URobotActState
+{
+	GENERATED_BODY()
+
+public:
+	void OnExecute(eStateID eState, void* arg1 = nullptr, void* arg2 = nullptr);
+	void OnLoop();
+	void OnExit(eStateID eState);
+
+	void OnRobotDestroy();
+};

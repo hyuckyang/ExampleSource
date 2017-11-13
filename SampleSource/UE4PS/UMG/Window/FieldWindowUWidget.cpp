@@ -4,6 +4,7 @@
 #include "Manager/PSWidgetManager.h"
 #include "UMG/Item/ActHudBar.h"
 #include "UMG/Item/TapSelectHeroInfoItem.h"
+#include "Core/Act/CoreActCharacter.h"
 #include "Hero/Act/HeroActCharacter.h"
 
 void UFieldWindowUWidget::NativeConstruct()
@@ -76,33 +77,27 @@ void UFieldWindowUWidget::AddToHeroInfo(AHeroActCharacter* hero)
 	m_TapHeroItems.Emplace(heroItem);
 	m_heroListWrapBox->AddChild(heroItem);
 
-	/*
-	±¸Çö Áß
-	*/
-	return;
-	cls = nullptr;
-	cls = m_psWidgetManager->GetBlueprintClass(TEXT("/Game/A_Sample/UMG/Item"), TEXT("BP_ActHudBar"));
-	if (cls == nullptr)return;
-
-	UActHudBar* hudBar = CreateWidget<UActHudBar>(m_psGameInstance->GetWorld(), cls);
-	if (hudBar == nullptr) return;
-
-	hudBar->AddToCharacterInfo(hero);
-	hudBar->AddToParentPanel(m_hudPanel);
-	
-	//hudBar->AddToViewport(0);
-	//m_hudPanel->AddChild(hudBar);
+	GiveToHeadBar(hero);
 }
 
 void UFieldWindowUWidget::SelectToHeroInfo(int32 uniqueID)
 {
-
 	for (int loop = 0, max = m_TapHeroItems.Num(); loop < max; ++loop)
 	{
 		UTapSelectHeroInfoItem* current = m_TapHeroItems[loop];
 		current->SelectToItem(current->GetHeroUniqueID() == uniqueID ? true : false);
 
-		//UE_LOG(LogClass, Log, TEXT("GetHeroUniqueID : %d, uniqueID : %d"), current->GetHeroUniqueID(), uniqueID);
 	}
+}
 
+void UFieldWindowUWidget::GiveToHeadBar(ACoreActCharacter* core)
+{
+	UClass* cls = m_psWidgetManager->GetBlueprintClass(TEXT("/Game/A_Sample/UMG/Item"), TEXT("BP_ActHudBar"));
+	if (cls == nullptr)return;
+
+	UActHudBar* hudBar = CreateWidget<UActHudBar>(m_psGameInstance->GetWorld(), cls);
+	if (hudBar == nullptr) return;
+
+	hudBar->AddToCharacterInfo(core);
+	hudBar->AddToParentPanel(m_hudPanel);
 }

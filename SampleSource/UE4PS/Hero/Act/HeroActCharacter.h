@@ -47,6 +47,10 @@ public:
 
 	// Weapon
 	void OnFire();
+
+public :
+	UPROPERTY(EditDefaultsOnly, Category = "Hero | Montage")
+	class UAnimMontage*		m_HeroRifleOneShootMontage;
 	
 protected:
 	FString					m_HeroName;

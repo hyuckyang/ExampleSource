@@ -11,6 +11,11 @@
 #include "Hero/Weapon/HeroGunWeapon.h"
 //
 
+// 애니메이션
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "Animation/AnimNotifies/AnimNotifyState.h"
+
 AHeroActCharacter::AHeroActCharacter() : Super()
 {
 	// Weapon -- 
@@ -19,8 +24,6 @@ AHeroActCharacter::AHeroActCharacter() : Super()
 
 	/*static ConstructorHelpers::FObjectFinder<UBlueprint> heroWeapon(TEXT("Blueprint'/Game/A_Sample/Hero/Weapon/BP_HeroGunWeapon.BP_HeroGunWeapon'"));;
 	if (heroWeapon.Succeeded() == false) { UE_LOG(LogClass, Log, TEXT("heroWeapon not Find"));  return; }*/
-
-	
 }
 
 
@@ -30,8 +33,10 @@ void AHeroActCharacter::BeginPlay()
 	Super::BeginPlay();
 	m_ActorManager->AddToHero(this);
 	
-	m_TeamID	= eTeamID::HERO;
-	m_ControlID = eHeorControlID::AUTO;
+	
+	m_ActorTypeID	= eActorTypeID::HERO;
+	m_ControlID		= eHeorControlID::AUTO;
+	m_TeamID		= eTeamID::BLUE;
 	
 	m_SightDist = 200.f;
 	m_Sight->SetSightDistance(m_SightDist);
@@ -51,7 +56,7 @@ void AHeroActCharacter::BeginPlay()
 	m_GunWeapon		= this->GetWorld()->SpawnActor<AHeroGunWeapon>(bpGC->GetDefaultObject()->GetClass(), FVector::ZeroVector, FRotator::ZeroRotator);
 	m_GunWeapon		->AttachRootComponentTo(m_SKMesh, FName(TEXT("rHandGripPoint")));
 	m_GunWeapon		->SetActorRotation(GetActorRotation());
-
+	m_GunWeapon		->SetCoreCharcter(this);
 
 	AddState(eStateID::IDLE, NewObject<UHeroActIdleState>());
 	AddState(eStateID::MOVE, NewObject<UHeroActMoveState>());
@@ -147,5 +152,9 @@ void AHeroActCharacter::OnFire()
 {
 	if (m_GunWeapon == nullptr)return;
 
+
 	m_GunWeapon->OnFire();
+	
+	PlayAnimMontage(m_HeroRifleOneShootMontage);
+
 }

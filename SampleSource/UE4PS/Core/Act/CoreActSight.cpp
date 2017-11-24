@@ -4,19 +4,19 @@
 #include "Core/Act/CoreActCharacter.h"
 
 
-ACoreActSight::ACoreActSight(const class FObjectInitializer& initializer) : Super(initializer)
+ACoreActSight::ACoreActSight(/*const class FObjectInitializer& initializer*/) /*: Super(initializer)*/ : Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Comp"));
 
-	m_CollierSight = CreateDefaultSubobject<USphereComponent>(TEXT("Collider Sight"));
-	m_CollierSight->SetSphereRadius(1.f);
-	m_CollierSight->AttachToComponent(this->RootComponent, FAttachmentTransformRules::KeepWorldTransform);
-	m_CollierSight->bGenerateOverlapEvents = true; // 面倒贸府 True
+	//m_CollierSight = CreateDefaultSubobject<USphereComponent>(TEXT("Collider Sight"));
+	//m_CollierSight->SetSphereRadius(1.f);
+	//m_CollierSight->AttachToComponent(this->RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+	//// m_CollierSight->bGenerateOverlapEvents = true; // 面倒贸府 True
 
-	m_CollierSight->OnComponentBeginOverlap.AddDynamic(this, &ACoreActSight::OnInColliderBeginOverlap);
-	m_CollierSight->OnComponentEndOverlap.AddDynamic(this, &ACoreActSight::OnInColliderEndOverlap);
+	//m_CollierSight->OnComponentBeginOverlap.AddDynamic(this, &ACoreActSight::OnInColliderBeginOverlap);
+	//m_CollierSight->OnComponentEndOverlap.AddDynamic(this, &ACoreActSight::OnInColliderEndOverlap);
 	//
 	
 }
@@ -51,7 +51,17 @@ void ACoreActSight::SetCharacter(ACoreActCharacter* character)
 bool ACoreActSight::IsAttackCharacter()
 {
 	// 矫具俊 绝栏搁..
-	if (this->m_InRangeSightActs.Num() == 0) return false;
+	//m_InRangeSightActs.
+	//
+	try
+	{
+		if (this->m_InRangeSightActs.Num() == 0) return false;
+	}
+	catch (const std::exception&)
+	{
+		return false;
+	}
+	
 	//
 	this->m_InRangeAttackActs.Empty();
 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 //#include "Blueprint/UserWidget.h"
+#include "Common/PSDataSchema.h"
 #include "Runtime/UMG/Public/UMG.h"
 #include "Runtime/UMG/Public/UMGStyle.h"
 #include "Runtime/UMG/Public/Slate/SObjectWidget.h"
@@ -13,6 +14,7 @@
 #include "Runtime/UMG/Public/Components/WidgetSwitcher.h"
 #include "Runtime/UMG/Public/Components/TextBlock.h"
 #include "TapSelectHeroInfoItem.generated.h"
+
 
 class AHeroActCharacter;
 /**
@@ -26,17 +28,30 @@ class UE4PS_API UTapSelectHeroInfoItem : public UUserWidget
 public:
 
 	virtual void NativeConstruct();
+	
 	void AddToHeroInfo(AHeroActCharacter* hero);
+	
 	void SelectToItem(bool bSelect);
-	int32 GetHeroUniqueID() { return m_HeroUniqueID; }
 
+
+	void ToDamageShow(int32 damageValue) {};
+	void SetWeaponTriggerID(eWeaponTriggerID triggerID);
+
+	//
+	int32 GetHeroUniqueID() { return m_HeroUniqueID; }
 public:
 	
 	UPROPERTY()
 	UWidgetSwitcher* m_SelectSwitcher;
 	
 	UPROPERTY()
-	UTextBlock* m_SelectNameTxt;	
+	UTextBlock*		m_NameText;	
+
+	UPROPERTY()
+	UTextBlock*		m_WeaponText;
+
+	UPROPERTY()
+	UProgressBar*	m_HpBar;
 
 	int32 m_HeroUniqueID = 0;
 };

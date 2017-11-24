@@ -5,8 +5,7 @@
 #include "Hero/Control/HeroActControl.h"
 
 /*
-
-*/
+ */
 void UPSActorManager::SetPSGameInstance(UPSGameInstance* instance)
 {
 	Super::SetPSGameInstance(instance);
@@ -21,16 +20,17 @@ void UPSActorManager::SetPSGameInstance(UPSGameInstance* instance)
 }
 
 /*
-
-*/
+ */
 void UPSActorManager::AddToCharacter(ACoreActCharacter* core)
 {
 	GiveToUniqueID(core);
+
+	if (!m_CoreActors.Contains(core))
+		 m_CoreActors.Emplace(core);
 }
 
 /*
-
-*/
+ */
 void UPSActorManager::AddToHero(AHeroActCharacter* hero)
 {
 	// 유니크 아이디 부여
@@ -43,8 +43,7 @@ void UPSActorManager::AddToHero(AHeroActCharacter* hero)
 }
 
 /*
-
-*/
+ */
 AHeroActCharacter* UPSActorManager::GetControlHeroActor()
 {
 	if (m_ControlHeroActor == nullptr && m_HeroActors.IsValidIndex(m_TapToHeroIndex)) 
@@ -55,8 +54,7 @@ AHeroActCharacter* UPSActorManager::GetControlHeroActor()
 }
 
 /*
-
-*/
+ */
 void UPSActorManager::SetControlHeroActor(AHeroActCharacter* hero)
 {
 	int idx = m_HeroActors.IndexOfByKey(hero);
@@ -66,16 +64,14 @@ void UPSActorManager::SetControlHeroActor(AHeroActCharacter* hero)
 }
 
 /*
-
-*/
+ */
 AHeroActCharacter* UPSActorManager::GetHeroActor(int index)
 {
 	return m_HeroActors.IsValidIndex(index) ? m_HeroActors[index] : nullptr;
 }
 
 /*
-
-*/
+ */
 AHeroActCharacter* UPSActorManager::GetTapToHeroActor()
 {
 	m_TapToHeroIndex++;
@@ -86,16 +82,14 @@ AHeroActCharacter* UPSActorManager::GetTapToHeroActor()
 }
 
 /*
-
-*/
+ */
 //void UPSActorManager::SetTapAndControlHeroActor() 
 //{
 //	m_ControlHeroActor = GetTapToHeroActor();
 //}
 
 /*
-
-*/
+ */
 int32 UPSActorManager::GetRandomUniqueID()
 {
 	int32 rUqID = 0;
@@ -107,6 +101,8 @@ int32 UPSActorManager::GetRandomUniqueID()
 	return rUqID;
 }
 
+/*
+ */
 void UPSActorManager::GiveToUniqueID(ACoreActCharacter* character)
 {
 	int32 uqID = GetRandomUniqueID();
@@ -114,12 +110,19 @@ void UPSActorManager::GiveToUniqueID(ACoreActCharacter* character)
 	m_TotalUniqueID.Emplace(uqID);
 
 	character->SetUniqueID(uqID);
-
-	//sUE_LOG(LogClass, Log, TEXT("rUqID %d"), uqID);
-
 }
 
+/*
+ */
+void UPSActorManager::TotalActChangeState(eStateID stateID)
+{
+	if (m_CoreActors.Num() == 0) return;
 
+	return;
 
-
-
+	for (int loop = 0, max = m_CoreActors.Num(); loop < max; loop++) 
+	{
+		if (IsValid(m_CoreActors[loop]))
+			m_CoreActors[loop]->ChangeState(stateID);
+	}
+}

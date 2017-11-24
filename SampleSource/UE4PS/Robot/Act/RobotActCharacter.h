@@ -47,7 +47,8 @@ public :
 	void PlayAttackAnimStop();
 	
 	//
-	virtual void OnDeath();
+	virtual void ReceivedAttackDamage(int damageValue);
+	virtual void OnDeath(float delayExploer = 0.f);
 
 public:
 

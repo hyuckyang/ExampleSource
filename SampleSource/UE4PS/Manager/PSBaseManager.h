@@ -15,7 +15,10 @@ class UE4PS_API UPSBaseManager : public UObject
 {
 	GENERATED_BODY()
 	
+
 public:
+	
+	UPSBaseManager();
 
 	virtual void SetPSGameInstance(UPSGameInstance* instance) { this->m_psGameInstance = instance; }
 	virtual class UWorld* GetWorld() const;

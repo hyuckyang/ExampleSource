@@ -1,16 +1,21 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ActHudBar.h"
-#include "Runtime/UMG/Public/Blueprint/WidgetLayoutLibrary.h"
+
 #include "Runtime/Engine/Classes/Engine/UserInterfaceSettings.h"
+#include "Runtime/UMG/Public/Blueprint/WidgetLayoutLibrary.h"
+#include "Components/WidgetComponent.h"
+#include "PSPlayerController.h"
 
 #include "Common/PSDataSchema.h"
 #include "Common/PSGameInstance.h"
+#include "UMG/Item/HudEffectText.h"
+#include "Manager/PSWidgetManager.h"
 #include "Core/Act/CoreActCharacter.h"
 #include "Hero/Act/HeroActCharacter.h"
-#include "PSPlayerController.h"
-#include "Manager/PSWidgetManager.h"
-#include "UMG/Item/HudEffectText.h"
+
+
+
 /*
 
 */
@@ -18,6 +23,10 @@ void UActHudBar::NativeConstruct()
 {
 	//
 	Super::NativeConstruct();
+
+	m_PanelWidget = Cast<UPanelWidget>(WidgetTree->FindWidget(FName("CanvasPanel_0")));
+	m_ProgressHP = Cast<UProgressBar>(WidgetTree->FindWidget(FName("HP_PBar")));
+	m_ProgressHP->SetPercent(1.f);
 	
 }
 
@@ -36,31 +45,10 @@ void UActHudBar::NativeTick(const FGeometry& gometry, float deltaTime)
 	}
 
 	if (!m_ActCharacter->GetHudSocketLoaction(m_ActHudLocate)) return;
-
-	//
-	// 테스트
-	/*bool bVisible = GetWorld()->GetFirstPlayerController()->
-		ProjectWorldLocationToScreen(m_ActHudLocate, m_ScreenVec2Pos);*/
-
-	if (m_CanvasSlot == nullptr)return;
-
-	//m_ActHudLocate += FVector(0.f, 60.f, 0.f);
-
-	if (SetPositionFromWorld(m_ActHudLocate, m_CanvasSlot)) 
-	{
-		m_ActNameTxt->SetVisibility(ESlateVisibility::Visible);
-	}
-	else
-	{
-		m_ActNameTxt->SetVisibility(ESlateVisibility::Hidden);
-	}
-
-	SetVisibility(ESlateVisibility::Visible);
-
 }
 
 /*
- SGUI Plugins 를 참조하였습니다.
+ SGUI Plugins 를 참조하였습니다. WidgetComponent 사용해서 아래 함수 사용.. 안합니다.
 */
 bool UActHudBar::SetPositionFromWorld(FVector vec3, UCanvasPanelSlot* slot, FVector2D pivot)
 {
@@ -94,7 +82,7 @@ bool UActHudBar::SetPositionFromWorld(FVector vec3, UCanvasPanelSlot* slot, FVec
 */
 void UActHudBar::ToDamageShow(int32 damageValue) 
 {
-	UE_LOG(LogClass, Log, TEXT("DAMAEE MINE %s"), *(m_ActNameTxt->Text.ToString()));
+	// UE_LOG(LogClass, Log, TEXT("DAMAEE MINE %s"), *(m_ActNameTxt->Text.ToString()));
 
 	UClass* cls = m_psWidgetManager->GetBlueprintClass(TEXT("/Game/A_Sample/UMG/Item"), TEXT("BP_DamageText"));
 	if (cls == nullptr) return;
@@ -104,12 +92,11 @@ void UActHudBar::ToDamageShow(int32 damageValue)
 
 	UHudEffectText* effecttext = CreateWidget<UHudEffectText>(m_psGameInstance->GetWorld(), cls);
 
-	
-	UCanvasPanelSlot* canvasSlot = Cast<UCanvasPanelSlot>(m_ParentPanel->AddChild(effecttext));
-	//UCanvasPanelSlot* canvasSlot = Cast<UCanvasPanelSlot>(m_ParentPanel->AddChild(effecttext));
+	effecttext->SetTargetPanel(m_PanelWidget);
+	effecttext->SetDamegeShow(damageValue);
 
-	FVector2D vec2d = m_CanvasSlot->GetPosition() + FVector2D(-20.f, 0.f);
-	canvasSlot->SetPosition(vec2d);
+	float persent = (float)m_ActCharacter->m_CurrentHP / (float)m_ActCharacter->m_PointHealth;
+	m_ProgressHP->SetPercent(persent);
 }
 
 /*

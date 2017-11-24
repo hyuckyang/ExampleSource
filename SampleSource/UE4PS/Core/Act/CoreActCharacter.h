@@ -10,6 +10,8 @@
 
 DECLARE_DELEGATE_OneParam(ReceiveDamageDelegate, int32);
 
+class UWidgetComponent;
+class UCoreActSightSphereComponent;
 class UCharacterMovementComponent;
 class USkeletalMeshComponent;
 class UPSGameInstance;
@@ -25,6 +27,41 @@ class UE4PS_API ACoreActCharacter : public ACharacter
 	GENERATED_BODY()
 
 	ReceiveDamageDelegate m_receiveDamageDele;
+
+/*
+ * 상태 관련 함수 및 변수 들
+ */
+protected:
+
+	// TMap<eStateKindOfID, UCoreActState*>	m_CurStateList;
+
+	UPROPERTY()
+	UCoreActState*							m_CurState;
+
+	UPROPERTY()
+	TMap<eStateID, UCoreActState*>			m_StateMap;
+
+public:
+
+	/*virtual void AddState(eStateKindOfID stateKindOfID, eStateID stateID, UCoreActState* state) {};
+	virtual void ChangeState(eStateKindOfID stateKindOfID, eStateID stateID, void* arg1 = nullptr, void* arg2 = nullptr) {};*/
+
+	// 상태 추가
+	virtual void AddState(eStateID stateID, UCoreActState* state);
+
+	// 상태 변경
+	virtual void ChangeState(eStateID stateID, void* arg1 = nullptr, void* arg2 = nullptr);
+
+	// 상태 찾기
+	UCoreActState* FindState(eStateID stateID);
+
+	// 기타 값 가져오기
+	UFUNCTION(BlueprintCallable, Category = "Core | Character")
+	eStateID GetCurrentStateID() { return this->m_CurState != nullptr ? this->m_CurState->GetStateID() : eStateID::NONE; }
+
+
+/*
+*/
 public:
 	
 	ACoreActCharacter();
@@ -36,14 +73,7 @@ public:
 	void  SetUniqueID(int32 uqID) { m_UniqueID = uqID; }
 	int32 GetUniqueID() { return m_UniqueID; }
 
-	// 상태 추가
-	virtual void AddState(eStateID stateID, UCoreActState* state);
-
-	// 상태 변경
-	virtual void ChangeState(eStateID stateID, void* arg1 = nullptr, void* arg2 = nullptr);
-	
-	// 상태 찾기
-	UCoreActState* FindState(eStateID stateID);
+	void SetLocalData();
 
 	// 이동 함수 - 네비게이션을 이용
 	void OnUpdateToLocateWithNavi(FVector locate);
@@ -74,9 +104,6 @@ public:
 	template<typename T>
 	void ReceiveDamageFuncBind(UObject* obj, void (T::*funcPoint)(int32)) { m_receiveDamageDele.BindUObject(Cast<T>(obj), funcPoint); }
 
-	// 기타 값 가져오기
-	UFUNCTION(BlueprintCallable, Category = "Core | Character")
-	eStateID GetCurrentStateID() { return this->m_CurState != nullptr ? this->m_CurState->GetStateID() : eStateID::NONE; }
 
 	UFUNCTION(BlueprintCallable, Category = "Core | Character")
 	eTeamID  GetCurrentTeamID() { return this->m_TeamID; }
@@ -95,17 +122,28 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Core | Character")
 	float GetMoveRight() { return m_MoveDir.Y; }
 
-	// TArray<ACoreActCharacter*> GetPosibleAttackedActList();
 
-	virtual void OnDeath() {}
+	void SetHeadBar();
+	//
+	virtual void OnDeath(float delayExploer = 0.f) {}
 
 	void OnDeathToRagDollActive(FVector bounceDir = FVector::ZeroVector);
 	void OnDeathToParticle();
 
+	
 public:
 
+	//
+	int32 m_CurrentHP			= 0;
+	int32 m_PointHealth			= 0; // 
+	int32 m_PointSpeed			= 0; //
+	int32 m_PointMeleeAttack	= 0; //
+
+	/*UPROPERTY(EditAnywhere)
+	ACoreActSight* m_Sight;*/
+
 	UPROPERTY(EditAnywhere)
-	ACoreActSight* m_Sight;
+	UCoreActSightSphereComponent* m_SightComp;
 
 	// 인지거리
 	UPROPERTY(EditAnywhere)
@@ -121,31 +159,31 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death | Sound")
 	class USoundcue*			m_DeathSoundCue;
 
+
+
 protected:
-	USkeletalMeshComponent*			m_SKMesh;
-	//const USkeletalMeshSocket*		m_SKHudSocket;
-	UCharacterMovementComponent*	m_CHMoveComp;
+	USkeletalMeshComponent*					m_SKMesh;
+	UCharacterMovementComponent*			m_CHMoveComp;
+	UWidgetComponent*						m_HeadBar; // * 참조 - http://cafe.naver.com/unrealenginekr/14835
 
-	UCoreActState*					m_CurState;
-	TMap<eStateID, UCoreActState*>	m_StateMap;
 
-	eActorTypeID					m_ActorTypeID = eActorTypeID::NONE;
-	eTeamID							m_TeamID = eTeamID::NONE;
+	eActorTypeID							m_ActorTypeID = eActorTypeID::NONE;
+	eTeamID									m_TeamID = eTeamID::NONE;
 
 	// GameInstance;
-	UPSGameInstance*				m_PSGameInstance;
-	UPSActorManager*				m_ActorManager;
+	UPSGameInstance*						m_PSGameInstance;
+	UPSActorManager*						m_ActorManager;
 
 	// Collistion Param
-	FCollisionQueryParams			params;
+	FCollisionQueryParams					params;
 
-	int32							m_UniqueID = 0;
+	int32									m_UniqueID = 0;
 
 	// 
-	float							m_MoveForward = 0.f;
-	float							m_MoveRight = 0.f;;
+	float									m_MoveForward = 0.f;
+	float									m_MoveRight = 0.f;;
 
 	// KeyBoard 
-	FVector2D						m_MoveDir = FVector2D::ZeroVector;
+	FVector2D								m_MoveDir = FVector2D::ZeroVector;
 
 };

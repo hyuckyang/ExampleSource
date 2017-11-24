@@ -3,6 +3,7 @@
 #include "PSGameInstance.h"
 #include "Manager/PSActorManager.h"
 #include "Manager/PSWidgetManager.h"
+#include "Manager/PSDataManager.h"
 #include "TargetPoint/PSFieldRobotCreatePoint.h"
 #include "Goal/PSFixedGoalToProtect.h"
 #include "Core/Camera/CoreCameraControl.h"
@@ -27,6 +28,12 @@ void UPSGameInstance::CreateManagerObeject()
 	this->m_WidgetManager = NewObject<UPSWidgetManager>();
 	this->m_WidgetManager->AddToRoot();
 	this->m_WidgetManager->SetPSGameInstance(this);
+
+	this->m_DataManager = NewObject<UPSDataManager>();
+	this->m_DataManager->AddToRoot();
+	this->m_DataManager->SetPSGameInstance(this);
+	//this->m_DataManager->OnLoadTableData();
+	//UE_LOG(LogClass, Log, TEXT("GameInstance CreateManagerObeject"));
 
 }
 

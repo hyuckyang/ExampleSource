@@ -9,8 +9,8 @@
 #include "Runtime/UMG/Public/Slate/SObjectWidget.h"
 #include "Runtime/UMG/Public/IUMGModule.h"
 #include "Runtime/UMG/Public/Components/ProgressBar.h"
-#include "Runtime/UMG/Public/Blueprint/UserWidget.h"
 #include "Runtime/UMG/Public/Components/TextBlock.h"
+#include "Runtime/UMG/Public/Blueprint/UserWidget.h"
 #include "ActHudBar.generated.h"
 
 class APSPlayerController;
@@ -47,6 +47,10 @@ protected:
 	UPanelWidget*			m_ParentPanel;
 	UCanvasPanelSlot*		m_CanvasSlot;
 	UTextBlock*				m_ActNameTxt;
+	UProgressBar*			m_ProgressHP;
+
+
+	UPanelWidget*			m_PanelWidget;
 
 	//
 	APSPlayerController*	m_psPlayerController	= nullptr;

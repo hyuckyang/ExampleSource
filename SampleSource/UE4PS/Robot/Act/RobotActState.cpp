@@ -7,7 +7,7 @@
 #include "Goal/PSFixedGoalToProtect.h"
 #include "Core/Act/CoreActCharacter.h"
 #include "Core/Act/CoreActSight.h"
-
+#include "Core/Component/CoreActSightSphereComponent.h"
 
 /**
  기본
@@ -33,7 +33,7 @@ void URobotActState::SetCharacter(ACoreActCharacter* character)
 void URobotActIdleState::OnExecute(eStateID eState, void* arg1, void* arg2)
 {
 	Super::OnExecute(eState, arg1, arg2);
-
+	UE_LOG(LogClass, Log, TEXT("Robot IDLE"));
 }
 
 void URobotActIdleState::OnLoop()
@@ -60,7 +60,7 @@ void URobotActMoveState::OnExecute(eStateID eState, void* arg1, void* arg2)
 {
 	Super::OnExecute(eState, arg1, arg2);
 	
-	//UE_LOG(LogClass, Log, TEXT("Init MoveState"));
+	// UE_LOG(LogClass, Log, TEXT("RobotActState Move || X - %f / X - %f / X - %f"), m_RobotActor->GetGoalActor()->GetActorLocation().X, m_RobotActor->GetGoalActor()->GetActorLocation().Y, m_RobotActor->GetGoalActor()->GetActorLocation().Z);
 
 	// AI 컨트롤에 넘긴다.
 	m_RobotAIControl->SetMoveToGoalVector(m_RobotActor->GetGoalActor()->GetActorLocation());
@@ -70,11 +70,16 @@ void URobotActMoveState::OnLoop()
 {
 	Super::OnLoop();
 	
-	ACoreActCharacter* core = m_RobotActor->m_Sight->GetNearCharacter();
+	ACoreActCharacter* core = m_RobotActor->m_SightComp->GetNearCharacter();
+
 	if (core != nullptr) 
 	{
+		if (!m_RobotActor->IsEnermy(core)) return;
+
 		// 타겟 객체를 넘긴다
 		m_RobotActor->ChangeState(eStateID::TARGET, core);
+
+		// UE_LOG(LogClass, Log, TEXT("RobotActState Move Next Target"));
 	}
 }
 
@@ -89,6 +94,8 @@ void URobotActMoveState::OnExit(eStateID state)
 void URobotActTargetState::OnExecute(eStateID eState, void* arg1, void* arg2)
 {
 	Super::OnExecute(eState, arg1, arg2);
+
+	UE_LOG(LogClass, Log, TEXT("Robot Target"));
 
 	if (arg1 != nullptr) 
 	{
@@ -106,8 +113,6 @@ void URobotActTargetState::OnExecute(eStateID eState, void* arg1, void* arg2)
 	}
 
 	m_RobotAIControl->SetMoveToHeroActor((class APawn*)targetActor);
-	
-
 }
 
 void URobotActTargetState::OnLoop()
@@ -184,7 +189,7 @@ void URobotActReturnState::OnLoop()
 	
 	// 리턴 중 타겟이 시야에서 사라지면 
 	// 그냥 다시 무브로 넘어거 골로 간다.
-	if (targetActor->m_Sight->IsInSightToCharacter(targetActor))
+	if (targetActor->m_SightComp->IsInSightToCharacter(targetActor))
 	{
 		m_RobotActor->ChangeState(eStateID::MOVE);
 		return;
@@ -208,6 +213,8 @@ void URobotActAttackState::OnExecute(eStateID eState, void* arg1, void* arg2)
 	if (arg2 != nullptr) returnToLocate = m_RobotActor->GetActorLocation();
 
 	m_RobotActor->PlayAttackAnimStart();
+
+	UE_LOG(LogClass, Log, TEXT("Robot Attack"));
 }
 
 void URobotActAttackState::OnLoop()
@@ -221,13 +228,9 @@ void URobotActAttackState::OnLoop()
 	{
 		// 함수화.. 
 		// 돌아가라..
-
-	
-
+		
 		m_RobotActor->ChangeState(eStateID::RETURN, &returnToLocate, targetActor);
 		m_RobotAIControl->SetMoveToHeroActor(nullptr);
-
-		
 		return;
 	}
 
@@ -258,7 +261,14 @@ void URobotActDeathState::OnExecute(eStateID eState, void* arg1, void* arg2)
 {
 	Super::OnExecute(eState, arg1, arg2);
 
-	m_RobotActor->OnDeathToRagDollActive();
+	if (arg1 != nullptr)
+	{
+		robotDelayDie = *(float*)arg1;
+	}
+	
+	OnRobotDestroy();
+	m_RobotActor->Destroy();
+	//m_RobotActor->OnDeathToRagDollActive();
 	
 }
 
@@ -274,5 +284,27 @@ void URobotActDeathState::OnExit(eStateID state)
 
 void URobotActDeathState::OnRobotDestroy()
 {
+	m_RobotActor->OnDeathToParticle();
+}
 
+/**
+SLEEP -> GameOver 시
+**/
+void URobotActSleepState::OnExecute(eStateID eState, void* arg1, void* arg2)
+{
+	Super::OnExecute(eState, arg1, arg2);
+
+	UE_LOG(LogClass, Log, TEXT("Robot Sleep"));
+
+	m_RobotActor->UnPossessed();
+}
+
+void URobotActSleepState::OnLoop()
+{
+	Super::OnLoop();
+}
+
+void URobotActSleepState::OnExit(eStateID state)
+{
+	Super::OnExit(state);
 }

@@ -8,6 +8,7 @@
 
 class UPSActorManager;
 class UPSWidgetManager;
+class UPSDataManager;
 class APSFieldRobotCreatePoint;
 class APSFixedGoalToProtect;
 class ACoreCameraControl;
@@ -20,8 +21,9 @@ class UE4PS_API UPSGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 
-	UPSActorManager*  m_ActorManager = nullptr;
-	UPSWidgetManager* m_WidgetManager = nullptr;
+	UPSWidgetManager*	m_WidgetManager = nullptr;
+	UPSActorManager*	m_ActorManager	= nullptr;
+	UPSDataManager*		m_DataManager	= nullptr;
 
 	// Field Control Actor ( 카메라 컨트롤러 상속받은 객체. )
 	ACoreCameraControl* m_CameraControlActor;
@@ -39,8 +41,10 @@ public:
 	Manager Func
 	*/
 	void CreateManagerObeject();
-	UPSActorManager*  GetActorManager()  { return this->m_ActorManager; }
-	UPSWidgetManager* GetWidgetManager() { return this->m_WidgetManager; }
+
+	UPSWidgetManager*	GetWidgetManager()	{ return this->m_WidgetManager; }
+	UPSActorManager*	GetActorManager()	{ return this->m_ActorManager; }
+	UPSDataManager*		GetDataManager()	{ return this->m_DataManager; }
 
 	void SetCameraControlActor(ACoreCameraControl*  control) { this->m_CameraControlActor = control; }
 	ACoreCameraControl* GetCamaraControlActor() { return this->m_CameraControlActor; }

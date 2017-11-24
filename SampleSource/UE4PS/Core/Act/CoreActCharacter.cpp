@@ -1,17 +1,34 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CoreActCharacter.h"
+#include "Core/Component/CoreActSightSphereComponent.h"
+#include "UMG/Item/ActHudBar.h"
 #include "Core/Act/CoreActSight.h"
 #include "Common/PSGameInstance.h"
+#include "Manager/PSDataManager.h"
 #include "Manager/PSActorManager.h"
-#include "Components/CapsuleComponent.h"
+
+//
 #include "AI/Navigation/NavigationSystem.h"
+
+//
+#include "Components/WidgetComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+
+//
 #include "GameFramework/CharacterMovementComponent.h"
 
-ACoreActCharacter::ACoreActCharacter()
+
+ACoreActCharacter::ACoreActCharacter() /*: Super()*/
 {
 	PrimaryActorTick.bCanEverTick = true;	
+
+	m_SightComp = CreateDefaultSubobject<UCoreActSightSphereComponent>(TEXT("Sight Component"));
+	//m_SightComp->AttachToComponent(this->RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+	m_SightComp->SetupAttachment(RootComponent);
+	m_SightComp->bGenerateOverlapEvents = true; // 面倒贸府 True
+
 }
 
 void ACoreActCharacter::BeginPlay()
@@ -25,13 +42,17 @@ void ACoreActCharacter::BeginPlay()
 	this->m_AttackDist = 125.f;
 
 	//
-	UClass* bpGC = LoadObject<UBlueprintGeneratedClass>(nullptr, TEXT("Blueprint'/Game/A_Sample/Core/BP_CoreActSight.BP_CoreActSight_C'"));
+	/*UClass* bpGC = LoadObject<UBlueprintGeneratedClass>(nullptr, TEXT("Blueprint'/Game/A_Sample/Core/BP_CoreActSight.BP_CoreActSight_C'"));
 	if (bpGC != nullptr)
 	{
 		this->m_Sight = this->GetWorld()->SpawnActor<ACoreActSight>(bpGC->GetDefaultObject()->GetClass(), this->GetActorLocation(), this->GetActorRotation());
 		this->m_Sight->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
 		this->m_Sight->SetCharacter(this);
-	}
+	}*/
+
+	//if (m_SightComp != nullptr)
+	m_SightComp->SetCharacter(this);
+
 
 	//
 	params.AddIgnoredActor(this);
@@ -45,6 +66,8 @@ void ACoreActCharacter::BeginPlay()
 	//
 	m_CHMoveComp->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
+
+	// UE_LOG(LogClass, Log, TEXT("ACoreActCharacter Begin Play"));
 	
 }
 
@@ -52,17 +75,40 @@ void ACoreActCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	if (this->m_CurState == nullptr) return;
-	this->m_CurState->OnLoop();
+	if (IsValid(m_CurState))
+	{
+		m_CurState->OnLoop();
+	}
+	/*if (m_CurState == nullptr) return;
+	m_CurState->OnLoop();*/
+	
 
 	//
-	if (this->m_Sight == nullptr) return;
-	this->m_Sight->SetActorLocation(this->GetActorLocation());
+	/*if (this->m_Sight == nullptr) return;
+	this->m_Sight->SetActorLocation(this->GetActorLocation());*/
 }
 
 void ACoreActCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void ACoreActCharacter::SetLocalData()
+{
+
+	TArray<FCharacterData> arr = m_PSGameInstance->GetDataManager()->GetCharacterData();
+	FCharacterData* findData = arr.FindByPredicate([&](FCharacterData data)
+	{
+		return data.m_ATypeID == m_ActorTypeID;
+	});
+
+	if (findData == nullptr) { UE_LOG(LogClass, Log, TEXT("findData == nullptr")); return; }
+
+	m_PointHealth		= findData->m_HeathValue;
+	m_PointSpeed		= findData->m_SpeedValue;
+	m_PointMeleeAttack	= findData->m_MeleeAttackValue;
+
+	m_CurrentHP			= m_PointHealth;
 }
 
 void ACoreActCharacter::AddState(eStateID stateID, UCoreActState * state)
@@ -87,9 +133,13 @@ void ACoreActCharacter::ChangeState(eStateID stateID, void* arg1 /*= nullptr*/, 
 
 }
 
-UCoreActState * ACoreActCharacter::FindState(eStateID stateID)
+UCoreActState* ACoreActCharacter::FindState(eStateID stateID)
 {
-	return this->m_StateMap.Contains(stateID) == true ? m_StateMap[stateID] : nullptr;
+	if (!m_StateMap.Contains(stateID)) return nullptr;
+
+	UCoreActState* state = m_StateMap[stateID];
+
+	return IsValid(state) ? state : nullptr;
 }
 
 void ACoreActCharacter::OnUpdateToLocateWithNavi(FVector locate)
@@ -166,6 +216,16 @@ bool ACoreActCharacter::GetHudSocketLoaction(FVector& locate)
 	return true;
 }
 
+void ACoreActCharacter::SetHeadBar()
+{
+	if (m_HeadBar == nullptr)
+		m_HeadBar = FindComponentByClass<UWidgetComponent>();
+
+	UActHudBar* heabWidget = Cast<UActHudBar>(m_HeadBar->GetUserWidgetObject());
+	if (heabWidget != nullptr)
+		heabWidget->AddToCharacterInfo(this);
+}
+
 void ACoreActCharacter::OnDeathToRagDollActive(FVector bounceDir)
 {
 	// ??  夸家 傍何 鞘夸.
@@ -196,7 +256,11 @@ void ACoreActCharacter::OnDeathToRagDollActive(FVector bounceDir)
 
 void ACoreActCharacter::OnDeathToParticle()
 {
+	FVector  locate = GetActorLocation();
+	FRotator rotate = GetActorRotation();
 
+	UGameplayStatics::SpawnEmitterAtLocation(this, m_DeathParticle, locate, rotate);
+	UGameplayStatics::SpawnSoundAtLocation(this, (USoundBase*)m_DeathSoundCue, locate);
 }
 
 //TArray<ACoreActCharacter*> ACoreActCharacter::GetPosibleAttackedActList() 

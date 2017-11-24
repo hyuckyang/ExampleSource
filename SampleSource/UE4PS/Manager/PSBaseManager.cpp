@@ -2,6 +2,11 @@
 
 #include "PSBaseManager.h"
 
+UPSBaseManager::UPSBaseManager() :Super()
+{
+
+}
+
 UWorld* UPSBaseManager::GetWorld() const
 {
 	return m_psGameInstance != nullptr ? m_psGameInstance->GetWorld() : nullptr;

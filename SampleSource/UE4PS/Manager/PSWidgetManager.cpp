@@ -60,9 +60,10 @@ void UPSWidgetManager::PushToWindow(eWindowID windowID, void* arg1, void* arg2)
 	UCoreWindowUWidget* coreWidget = m_windowWidgets[windowID];
 	
 	coreWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	coreWidget->AddToViewport(m_windowStack.Num() - 1);
+	coreWidget->AddToViewport(m_windowStack.Num() + 1);
 	coreWidget->ShowWindow(arg1, arg2);
 
+	
 	m_windowStack.Push(coreWidget);
 }
 

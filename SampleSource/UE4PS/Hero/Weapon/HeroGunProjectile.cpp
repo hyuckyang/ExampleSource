@@ -16,8 +16,8 @@ AHeroGunProjectile::AHeroGunProjectile()
 	m_SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("Collider Sight"));
 	m_SphereCollision->SetSphereRadius(1.f);
 	//m_SphereCollision->AttachToComponent(this->RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+	m_SphereCollision->SetCollisionResponseToAllChannels(ECR_Ignore);
 	m_SphereCollision->bGenerateOverlapEvents = true; // 충돌처리 True
-
 	m_SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AHeroGunProjectile::OnInColliderBeginOverlap);
 
 	RootComponent = m_SphereCollision;
@@ -29,6 +29,8 @@ void AHeroGunProjectile::BeginPlay()
 	Super::BeginPlay();	
 
 	SetLifeSpan(3.f);
+
+	//UE_LOG(LogClass, Log, TEXT("BeginPlay"));
 }
 
 void AHeroGunProjectile::Tick(float DeltaTime)
@@ -40,14 +42,14 @@ void AHeroGunProjectile::Tick(float DeltaTime)
 	SetActorRelativeLocation(fwVec3);
 }
 
+void AHeroGunProjectile::SetCoreCharcter(ACoreActCharacter* coreCharcter)
+{
+	m_MineCoreAct = coreCharcter;
+}
+
 void AHeroGunProjectile::SetProjectileVelocity(const FVector& velocityValue)
 {
 	m_ShootVelocity = velocityValue;
-	
-	//if (m_ProjectileMoveComp == nullptr) m_ProjectileMoveComp = FindComponentByClass<UProjectileMovementComponent>();
-	////m_ProjectileMoveComp->Velocity = m_ShootVelocity * m_ProjectileMoveComp->InitialSpeed;
-	//m_ProjectileMoveComp->SetVelocityInLocalSpace(m_ShootVelocity * m_ProjectileMoveComp->InitialSpeed);
-
 }
 
 
@@ -55,16 +57,17 @@ void AHeroGunProjectile::SetProjectileVelocity(const FVector& velocityValue)
 void AHeroGunProjectile::OnInColliderBeginOverlap(class UPrimitiveComponent* overlappedComp, class AActor* otherActor, class UPrimitiveComponent* otherComp,
 	int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweeppResult)
 {
-	if (m_MineCoreAct && otherActor )
+	if (m_MineCoreAct == nullptr) { return; }
+
+	if (m_MineCoreAct !=nullptr && otherActor != nullptr)
 	{
 		ACoreActCharacter* coreAct = Cast<ACoreActCharacter>(otherActor);
+
 		if (coreAct != nullptr) 
 		{
 			if (m_MineCoreAct->IsEnermy(coreAct)) 
 			{
-				coreAct->ReceivedAttackDamage(1);
-
-				coreAct->OnDeath();
+				coreAct->ReceivedAttackDamage(m_MineCoreAct->m_PointMeleeAttack);
 			}
 		}
 	}

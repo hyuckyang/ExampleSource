@@ -5,14 +5,15 @@
 #include "Manager/PSActorManager.h"
 #include "Manager/PSWidgetManager.h"
 
-ACoreCameraControl::ACoreCameraControl()
+ACoreCameraControl::ACoreCameraControl() : Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	this->RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComp"));
 
 	this->m_pCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("pCamera"));
-	this->m_pCamera->AttachToComponent(this->RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+	this->m_pCamera->SetupAttachment(RootComponent);
+	// this->m_pCamera->AttachToComponent(this->RootComponent, FAttachmentTransformRules::KeepWorldTransform);
 }
 
 void ACoreCameraControl::BeginPlay()

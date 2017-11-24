@@ -86,14 +86,15 @@ void AHeroActControl::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	this->InputComponent->BindAction("MouseWheelUp",	IE_Pressed,  this, &AHeroActControl::InputMouseWheelUp);
-	this->InputComponent->BindAction("MouseWheelDown",	IE_Pressed,  this, &AHeroActControl::InputMouseWheelDown);
-	this->InputComponent->BindAction("MouseLClick",		IE_Pressed,  this, &AHeroActControl::InputMouseLClickPressed);
-	this->InputComponent->BindAction("MouseLClick",		IE_Released, this, &AHeroActControl::InputMouseLClickReleased);
-	this->InputComponent->BindAction("MouseRClick",		IE_Pressed,  this, &AHeroActControl::InputMouseRClickPressed);
-	this->InputComponent->BindAction("MouseRClick",		IE_Released, this, &AHeroActControl::InputMouseRClickReleased);
-	this->InputComponent->BindAction("TapToNext",		IE_Released, this, &AHeroActControl::InputTapClickReleased);
-	this->InputComponent->BindAction("SpaceToTarget",	IE_Released, this,  &AHeroActControl::InputSpaceClickReleased);
+	this->InputComponent->BindAction("MouseWheelUp",		IE_Pressed,  this, &AHeroActControl::InputMouseWheelUp);
+	this->InputComponent->BindAction("MouseWheelDown",		IE_Pressed,  this, &AHeroActControl::InputMouseWheelDown);
+	this->InputComponent->BindAction("MouseLClick",			IE_Pressed,  this, &AHeroActControl::InputMouseLClickPressed);
+	this->InputComponent->BindAction("MouseLClick",			IE_Released, this, &AHeroActControl::InputMouseLClickReleased);
+	this->InputComponent->BindAction("MouseRClick",			IE_Pressed,  this, &AHeroActControl::InputMouseRClickPressed);
+	this->InputComponent->BindAction("MouseRClick",			IE_Released, this, &AHeroActControl::InputMouseRClickReleased);
+	this->InputComponent->BindAction("TapToNext",			IE_Released, this, &AHeroActControl::InputTapClickReleased);
+	this->InputComponent->BindAction("SpaceToTarget",		IE_Released, this, &AHeroActControl::InputSpaceClickReleased);
+	this->InputComponent->BindAction("SwitchWeaponTrigger",	IE_Released, this, &AHeroActControl::InputBWeaponSwitcherReleased);
 
 	this->InputComponent->BindAxis("MouseX",		this, &AHeroActControl::InputMouseX);
 	this->InputComponent->BindAxis("MouseY",		this, &AHeroActControl::InputMouseY);
@@ -122,6 +123,7 @@ void AHeroActControl::InputMouseLClickPressed()
 		GetTargetHero()->OnUpdateToLocateWithNavi(hitresult.ImpactPoint);
 	}
 
+	GetTargetHero()->OnFire(true);
 }
 
 void AHeroActControl::InputMouseLClickReleased()
@@ -133,13 +135,14 @@ void AHeroActControl::InputMouseLClickReleased()
 
 	if (GetTargetHero() == nullptr) return;
 
-	GetTargetHero()->OnFire();
 	
+	GetTargetHero()->OnFire(false);
 	
 }
 
 void AHeroActControl::InputMouseRClickPressed()
 {
+	
 	if (m_ControlID == eCameraControlID::FREE) { this->m_bRotateCam = true; return; }
 	//	
 	if (m_ControlID == eCameraControlID::TARGET)
@@ -177,6 +180,13 @@ void AHeroActControl::InputTapClickReleased()
 void AHeroActControl::InputSpaceClickReleased() 
 {
 	this->SetControlTypeSwap();
+}
+
+void AHeroActControl::InputBWeaponSwitcherReleased()
+{
+	//this->SetControlTypeSwap();
+	if (GetTargetHero() == nullptr) return;
+	GetTargetHero()->OnWeaponTriggerSwitcher();
 }
 #pragma endregion
 

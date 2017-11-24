@@ -27,7 +27,8 @@ void ARobotAIController::Possess(class APawn* pawn)
 {
 	Super::Possess(pawn);
 
-	return;
+	// return;
+
 	ARobotActCharacter* robot = Cast<ARobotActCharacter>(pawn);
 	if (robot)
 	{
@@ -36,6 +37,8 @@ void ARobotAIController::Possess(class APawn* pawn)
 		m_RobotBBComp->InitializeBlackboard(*(robot->m_RobotAIBT->BlackboardAsset));
 		m_RobotBTComp->StartTree(*(robot->m_RobotAIBT));
 	}
+
+	//UE_LOG(LogClass, Log, TEXT("Robot Possess"));
 }
 
 /*
@@ -46,6 +49,8 @@ void ARobotAIController::UnPossess()
 	Super::UnPossess();
 
 	m_RobotBTComp->StopTree();
+
+	//UE_LOG(LogClass, Log, TEXT("Robot UnPossess"));
 }
 
 /*

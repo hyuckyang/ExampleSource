@@ -9,6 +9,8 @@
 #include "Core/Act/CoreActCharacter.h"
 #include "HeroActCharacter.generated.h"
 
+DECLARE_DELEGATE_OneParam(SwitcherWeaponTriggerDelegate, eWeaponTriggerID);
+
 class AHeroGunWeapon;
 class UStaticMeshComponent;
 /**
@@ -18,7 +20,9 @@ UCLASS()
 class UE4PS_API AHeroActCharacter : public ACoreActCharacter
 {
 	GENERATED_BODY()
-	
+
+	SwitcherWeaponTriggerDelegate m_switcherWTriggerDele;
+
 public:
 
 	AHeroActCharacter();
@@ -46,7 +50,13 @@ public:
 	FString GetName() { return this->m_HeroName; }
 
 	// Weapon
-	void OnFire();
+	void OnFire(bool bCanFire = true);
+	eWeaponTriggerID GetWeaponTriggerID();
+	void OnWeaponTriggerSwitcher();
+	
+	//
+	template<typename T>
+	void SwitcherWTriggerFuncBind(UObject* obj, void (T::*funcPoint)(eWeaponTriggerID)) { m_switcherWTriggerDele.BindUObject(Cast<T>(obj), funcPoint); }
 
 public :
 	UPROPERTY(EditDefaultsOnly, Category = "Hero | Montage")

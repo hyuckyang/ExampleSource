@@ -35,12 +35,12 @@ UPanelWidget* UCoreWindowUWidget::GetTopPanel()
 {
 	if (this->m_topPanel == nullptr)
 	{
-		UWidget* findWidget = WidgetTree->FindWidget(TEXT("TopPaenl"));
+		UWidget* findWidget = WidgetTree->FindWidget(TEXT("TopPanel"));
 		if (findWidget == nullptr)return nullptr;
 
 		this->m_topPanel = Cast<UPanelWidget>(findWidget);
 	}
-	return nullptr;
+	return this->m_topPanel;
 }
 
 /*

@@ -6,6 +6,7 @@
 #include "Engine/TargetPoint.h"
 #include "PSFieldRobotCreatePoint.generated.h"
 
+class UFieldWindowUWidget;
 /**
  * 
  */
@@ -18,7 +19,15 @@ public:
 	virtual void BeginPlay() override;
 	void CreateRobots(int waveNumber = -1);
 
-	/*void testcreatefunc();
-	FTimerHandle inoutHandle;*/
+	void SpawnToRobot();
+
+protected:
+
+	UFieldWindowUWidget*	m_FieldWindow;
+	FTimerHandle			m_WaveTimeHandle;
+	
+	int32					m_CreateValue = 3;
+	int32					m_CreateCount = 0;
+
 	
 };

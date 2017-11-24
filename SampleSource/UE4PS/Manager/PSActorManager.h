@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Common/PSDataSchema.h"
 #include "Manager/PSBaseManager.h"
 #include "PSActorManager.generated.h"
 
@@ -16,6 +17,8 @@ class UE4PS_API UPSActorManager : public UPSBaseManager
 {
 	GENERATED_BODY()
 
+	//
+	TArray<ACoreActCharacter*>	m_CoreActors;
 	// 전체 히어로 액터들.
 	TArray<AHeroActCharacter*>	m_HeroActors;
 	// 현재 컨트롤 하는 히어로 액터 -> nullptr 은 아무도 컨트롤 하지 않음
@@ -60,5 +63,8 @@ public:
 	int32 GetRandomUniqueID();
 	void  GiveToUniqueID(ACoreActCharacter* character);
 
-
+	/*
+	Total 
+	*/
+	void TotalActChangeState(eStateID stateID);
 };

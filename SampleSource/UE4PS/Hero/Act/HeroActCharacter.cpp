@@ -8,6 +8,7 @@
 #include "Manager/PSActorManager.h"
 #include "Hero/Act/HeroActState.h"
 #include "Core/Act/CoreActSight.h"
+#include "Core/Component/CoreActSightSphereComponent.h"
 #include "Hero/Weapon/HeroGunWeapon.h"
 //
 
@@ -26,24 +27,24 @@ AHeroActCharacter::AHeroActCharacter() : Super()
 	if (heroWeapon.Succeeded() == false) { UE_LOG(LogClass, Log, TEXT("heroWeapon not Find"));  return; }*/
 }
 
-
-
 void AHeroActCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	m_ActorManager->AddToHero(this);
-	
 	
 	m_ActorTypeID	= eActorTypeID::HERO;
 	m_ControlID		= eHeorControlID::AUTO;
 	m_TeamID		= eTeamID::BLUE;
 	
 	m_SightDist = 200.f;
-	m_Sight->SetSightDistance(m_SightDist);
+	m_SightComp->SetSightDistance(m_SightDist);
+	/*m_Sight->SetSightDistance(m_SightDist);*/
 
 	this->RandomCustomizing();
 	this->RandomNames();
 
+	SetHeadBar();
+	SetLocalData();
 	//
 	// USkeletalMeshComponent* skel = FindComponentByClass<USkeletalMeshComponent>();
 	//
@@ -148,13 +149,32 @@ void AHeroActCharacter::RandomNames()
 /*
 ..
 */
-void AHeroActCharacter::OnFire()
+void AHeroActCharacter::OnFire(bool bCanFire)
 {
 	if (m_GunWeapon == nullptr)return;
 
-
-	m_GunWeapon->OnFire();
-	
 	PlayAnimMontage(m_HeroRifleOneShootMontage);
 
+	m_GunWeapon->OnFire(bCanFire);
+
+}
+
+/*
+..
+*/
+eWeaponTriggerID AHeroActCharacter::GetWeaponTriggerID()
+{
+	return m_GunWeapon == nullptr ? m_GunWeapon->GetWTriggerID() : eWeaponTriggerID::SEMIAUTO;
+}
+
+/*
+..
+*/
+void AHeroActCharacter::OnWeaponTriggerSwitcher()
+{
+	if (!IsValid(m_GunWeapon)) return;
+
+	m_GunWeapon->SetTriggerSwitch();
+
+	m_switcherWTriggerDele.ExecuteIfBound(m_GunWeapon->GetWTriggerID());
 }

@@ -7,6 +7,7 @@
 #include "Goal/PSFixedGoalToProtect.h"
 #include "Robot/Act/RobotActState.h"
 #include "Robot/AI/RobotAIController.h"
+#include "Core/Component/CoreActSightSphereComponent.h"
 
 //
 #include "Public/TimerManager.h"
@@ -34,16 +35,19 @@ void ARobotActCharacter::BeginPlay()
 	m_RAIController = Cast<ARobotAIController>(GetController());
 
 	m_SightDist = 550.f;
-	m_Sight->SetSightDistance(m_SightDist);
+	m_SightComp->SetSightDistance(m_SightDist);
+	//m_Sight->SetSightDistance(m_SightDist);
 
+	m_ActorTypeID = eActorTypeID::ROBOT;
+	m_TeamID = eTeamID::DARK;
+
+	SetHeadBar();
+	SetLocalData();
 
 	if (m_RobotAttackMontage != nullptr) 
 	{
 		m_TimeHandleSec = m_RobotAttackMontage->SequenceLength;
 	}
-
-	m_ActorTypeID = eActorTypeID::ROBOT;
-	m_TeamID = eTeamID::DARK;
 
 	AddState(eStateID::IDLE,	NewObject<URobotActIdleState>());
 	AddState(eStateID::MOVE,	NewObject<URobotActMoveState>());
@@ -51,7 +55,7 @@ void ARobotActCharacter::BeginPlay()
 	AddState(eStateID::RETURN,	NewObject<URobotActReturnState>());
 	AddState(eStateID::ATTK,	NewObject<URobotActAttackState>());
 	AddState(eStateID::DEATH,   NewObject<URobotActDeathState>());
-
+	AddState(eStateID::SLEEP,	NewObject<URobotActSleepState>());
 
 	ChangeState(eStateID::IDLE);
 }
@@ -72,6 +76,8 @@ void ARobotActCharacter::ChangeState(eStateID stateID, void * arg1, void * arg2)
 	Super::ChangeState(stateID, arg1, arg2);
 
 	UCoreActState* state = this->FindState(stateID);
+
+	
 	if (state == nullptr) return;
 
 	eStateID oldState = eStateID::NONE;
@@ -92,8 +98,6 @@ void ARobotActCharacter::ChangeState(eStateID stateID, void * arg1, void * arg2)
 void ARobotActCharacter::PlayAttackAnimLoop()
 {
 	PlayAnimMontage(this->m_RobotAttackMontage);
-
-	
 }
 
 void ARobotActCharacter::PlayAttackAnimStart()
@@ -113,10 +117,21 @@ void ARobotActCharacter::PlayAttackAnimStop()
 	StopAnimMontage();
 }
 
-void ARobotActCharacter::OnDeath()
+void ARobotActCharacter::ReceivedAttackDamage(int damageValue)
+{
+	Super::ReceivedAttackDamage(damageValue);
+
+	m_CurrentHP--;
+	if (m_CurrentHP == 0)
+	{
+		OnDeath();
+	}
+}
+
+void ARobotActCharacter::OnDeath(float delayExploer)
 {
 	// 이미 죽은 상태라면. .. 
 	if (this->GetCurrentStateID() == eStateID::DEATH) return;
 	
-	ChangeState(eStateID::DEATH);
+	ChangeState(eStateID::DEATH, &delayExploer);
 }

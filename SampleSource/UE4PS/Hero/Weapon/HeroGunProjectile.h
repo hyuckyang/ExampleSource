@@ -22,9 +22,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
+	void SetCoreCharcter(ACoreActCharacter* coreCharcter);
 	void SetProjectileVelocity(const FVector& velocityValue);
-	void SetCoreCharcter(ACoreActCharacter* coreCharcter) { m_MineCoreAct = coreCharcter; }
-
+	
 	UFUNCTION()
 	void OnInColliderBeginOverlap(UPrimitiveComponent* overlappedComp, AActor* otherActor, UPrimitiveComponent* otherComp,
 									int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweeppResult);

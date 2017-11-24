@@ -9,7 +9,7 @@
 
 class ACoreActCharacter;
 /*
-*
+ 사용 안하는 클래스
 */
 UCLASS()
 class UE4PS_API ACoreActSight : public AActor
@@ -17,7 +17,7 @@ class UE4PS_API ACoreActSight : public AActor
 	GENERATED_BODY()
 	
 public:	
-	ACoreActSight(const class FObjectInitializer& initializer);
+	ACoreActSight(/*const class FObjectInitializer& initializer*/);
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
@@ -46,7 +46,6 @@ protected:
 	// 에디터 에서만 참조 - BP 는 그냥 참조
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	USphereComponent*			m_CollierSight;
-
 	//
 	ACoreActCharacter*			m_MineCharacter;
 	// 시야 안의 객체

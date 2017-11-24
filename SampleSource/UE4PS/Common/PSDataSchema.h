@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Runtime/Engine/Classes/Engine/DataTable.h"
 #include "PSDataSchema.generated.h"
 
 /**
@@ -29,7 +30,6 @@ public:
 };
 
 
-
 UENUM(BlueprintType)
 enum class eCameraControlID : uint8
 {
@@ -48,15 +48,37 @@ enum class eHeorControlID : uint8
 };
 
 UENUM(BlueprintType)
+enum class eStateKindOfID : uint8
+{
+	LOWER = 0,
+	UPPER,
+};
+
+UENUM(BlueprintType)
 enum class eStateID : uint8
 {
 	NONE = 0,
+
+	/*
+	Lower
+	*/
 	IDLE,
 	MOVE,
-	ATTK,
-	DEATH,
 	TARGET,
 	RETURN,
+
+	/*
+	Upper
+	*/
+	ATTK,
+	//ATTK_SHOOT,
+
+	/*
+	Unique
+	*/
+	DEATH, // 
+	SLEEP, // 게임 끝났을 때
+	MAX,
 };
 
 UENUM(BlueprintType)
@@ -83,10 +105,20 @@ UENUM(BlueprintType)
 enum class eRobotID : uint8
 {
 	NONE = 0,
-	Robot, // 이족보행
-	RobotTurret, // 터렛
+	RL2A2, // 이족보행
+	RL4B1, // 터렛
 	MAX
 
+};
+
+UENUM(BlueprintType)
+enum class eWeaponTriggerID : uint8
+{
+	NONE = 0,
+	SEMIAUTO,
+	BURST,
+	FULLAUTO,
+	MAX
 };
 
 UENUM(BlueprintType) // 이거 일단 사용 안함..
@@ -102,4 +134,52 @@ enum class eWindowID : uint8
 {
 	None = 0,
 	Field,
+	End,
+};
+
+UENUM(BlueprintType)
+enum class eWaveTypeID : uint8
+{
+	STANDBY = 0,
+	UPDATE, // Tick
+	BREAK, // 휴식
+	END,  // 웨이브 끝( 전체 끝임 )
+
+};
+
+
+/**
+ *
+ */
+USTRUCT(BlueprintType)
+struct FCharacterData : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+	FCharacterData()
+		:	m_ATypeID(eActorTypeID::NONE),
+			m_RTypeID(eRobotID::NONE),
+			m_HeathValue(0), m_SpeedValue(0), m_MeleeAttackValue(0)
+			{};
+
+	FCharacterData(FCharacterData* data)
+	{
+		m_ATypeID = data->m_ATypeID;
+		m_RTypeID = data->m_RTypeID;
+		m_HeathValue = data->m_HeathValue;
+		m_SpeedValue = data->m_SpeedValue;
+		m_MeleeAttackValue = data->m_MeleeAttackValue;
+	};
+
+	UPROPERTY(EditAnywhere)
+		eActorTypeID	m_ATypeID;
+	UPROPERTY(EditAnywhere)
+		eRobotID		m_RTypeID;
+	UPROPERTY(EditAnywhere)
+		int32			m_HeathValue;
+	UPROPERTY(EditAnywhere)
+		int32			m_SpeedValue;
+	UPROPERTY(EditAnywhere)
+		int32			m_MeleeAttackValue;
 };

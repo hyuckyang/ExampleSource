@@ -35,6 +35,7 @@ public:
 	//void InputTapClickPressed() {};
 	void InputTapClickReleased();
 	void InputSpaceClickReleased();
+	void InputBWeaponSwitcherReleased();
 	// ют╥б Axis
 	void InputMouseX(float deltaTime);
 	void InputMouseY(float deltaTime);

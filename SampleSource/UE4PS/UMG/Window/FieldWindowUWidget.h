@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Common/PSDataSchema.h"
+#include "Runtime/UMG/Public/Components/ProgressBar.h"
 #include "RunTime/UMG/Public/Components/ScrollBox.h"
 #include "RunTime/UMG/Public/Components/WrapBox.h"
 #include "Core/UMG/Window/CoreWindowUWidget.h"
@@ -32,7 +33,10 @@ public:
 
 	void SelectToHeroInfo(int32 uniqueID);
 	
-	// 머리 위에 HudBar 부여
+	void SetGoalUpdateValue(int32 value, int32 total);
+	class UHudMiddleText* SetWaveInfoTextPrint(FString str);
+
+	// 머리 위에 HudBar 부여.. 이거 사용 안함.
 	void GiveToHeadBar(ACoreActCharacter* core);
 	
 public :
@@ -43,6 +47,8 @@ public :
 
 	UScrollBox*		m_heroListScrollBox;
 	UWrapBox*		m_heroListWrapBox;
+
+	UProgressBar*	m_GoalValueBar;
 
 protected:
 

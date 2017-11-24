@@ -124,10 +124,32 @@ class UE4PS_API URobotActDeathState : public URobotActState
 {
 	GENERATED_BODY()
 
+private :
+
+	float robotDelayDie = 0.f;
+
 public:
 	void OnExecute(eStateID eState, void* arg1 = nullptr, void* arg2 = nullptr);
 	void OnLoop();
 	void OnExit(eStateID eState);
 
 	void OnRobotDestroy();
+};
+
+/*
+ Game Over ½Ã .
+ */
+UCLASS()
+class UE4PS_API URobotActSleepState : public URobotActState
+{
+	GENERATED_BODY()
+
+private:
+
+	
+
+public:
+	void OnExecute(eStateID eState, void* arg1 = nullptr, void* arg2 = nullptr);
+	void OnLoop();
+	void OnExit(eStateID eState);
 };

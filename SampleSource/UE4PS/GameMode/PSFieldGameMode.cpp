@@ -27,6 +27,7 @@ void APSFieldGameMode::BeginPlay()
 	AHeroActCharacter* heroActor = m_psActorManager->GetHeroActor(0);
 	m_HeroControl->SetHeroSelected(heroActor);
 
+	return;
 	waveTicks = 0.f;
 	WaveStandBy();
 }
@@ -35,14 +36,7 @@ void APSFieldGameMode::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	/*if(waveTicks != -1)
-		waveTicks++;
-
-	if (waveTicks > 15)
-	{
-		m_psGameInstance->OnWaveCreateRobots(-1);
-		waveTicks = -1;
-	}*/
+	return;
 
 	if (m_WaveTypeID != eWaveTypeID::END) 
 	{

@@ -30,5 +30,4 @@ protected:
 
 	class UBehaviorTreeComponent*	m_RobotBTComp;
 	class UBlackboardComponent*		m_RobotBBComp;
-
 };

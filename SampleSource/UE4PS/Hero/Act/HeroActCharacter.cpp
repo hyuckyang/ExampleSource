@@ -2,17 +2,22 @@
 
 #include "HeroActCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Manager/PSActorManager.h"
+#include "Hero/Weapon/HeroGunWeapon.h"
+#include "Hero/Act/HeroActState.h"
+#include "Hero/AI/HeroAIController.h"
+#include "Core/Act/CoreActSight.h"
+#include "Core/Component/CoreActSightSphereComponent.h"
+/*
+*/
+#include "Runtime/Engine/Classes/Engine/BlueprintGeneratedClass.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/DecalComponent.h"
-#include "Manager/PSActorManager.h"
-#include "Hero/Act/HeroActState.h"
-#include "Core/Act/CoreActSight.h"
-#include "Core/Component/CoreActSightSphereComponent.h"
-#include "Hero/Weapon/HeroGunWeapon.h"
-//
 
-// 애니메이션
+/*
+애니메이션
+*/
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
@@ -40,14 +45,19 @@ void AHeroActCharacter::BeginPlay()
 	m_SightComp->SetSightDistance(m_SightDist);
 	/*m_Sight->SetSightDistance(m_SightDist);*/
 
-	this->RandomCustomizing();
-	this->RandomNames();
+	m_HAIController = Cast<AHeroAIController>(GetController());
+	SetHeroControlID(m_ControlID);
+
+	RandomCustomizing();
+	RandomNames();
 
 	SetHeadBar();
 	SetLocalData();
 	//
 	// USkeletalMeshComponent* skel = FindComponentByClass<USkeletalMeshComponent>();
 	//
+
+	
 
 	m_PointSMMesh = FindComponentByClass<UStaticMeshComponent>();
 	if (m_PointSMMesh != nullptr) m_PointSMMesh->SetVisibility(false);
@@ -108,10 +118,22 @@ void AHeroActCharacter::ChangeState(eStateID stateID, void* arg1, void* arg2)
 
 void AHeroActCharacter::SetHeroControlID(eHeorControlID controlID) 
 {
-	if (controlID == eHeorControlID::MANUAL) 
+	AHeroAIController* heroAI = Cast<AHeroAIController>(AIControllerClass);
+
+	switch (controlID)
 	{
-		// 직접 조작 시 상태를 아이들로 바꾼다.
+	case eHeorControlID::MANUAL:
+	case eHeorControlID::SEMI_AUTO :
+		m_HAIController->StopBehaviorTree();
+
 		ChangeState(eStateID::IDLE);
+		break;
+	default:
+		m_HAIController->StartBehaviorTree(this);
+
+		// 임시 함수.
+		m_HAIController->SetChangeStateID(eStateID::PATROL);
+		break;
 	}
 	m_ControlID = controlID;
 }

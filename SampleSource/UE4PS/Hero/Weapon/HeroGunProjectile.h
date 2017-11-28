@@ -40,4 +40,6 @@ protected:
 	FVector							m_ShootVelocity;
 
 	ACoreActCharacter*				m_MineCoreAct;
+
+	TArray<ACoreActCharacter*>		m_TargetedActs;
 };

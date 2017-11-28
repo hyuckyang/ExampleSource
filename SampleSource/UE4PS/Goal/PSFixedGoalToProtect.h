@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
@@ -35,10 +34,22 @@ public:
 	template<typename T>
 	void GoalUpdateFuncBind(UObject* obj, void (T::*funcPoint)(int32, int32)) { m_goalUpdateDelegate.AddUObject(Cast<T>(obj), funcPoint); }
 
+	// void TestFunc();
+
+	// Patrol. .. 
+	void PatrolPointCreate();
+
+	class ATargetPoint*  GetPatrolPointIndex(int32 index);
+	class ATargetPoint*  GetPatrolPointRandom(int32& currentIndex);
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UBoxComponent*			m_BoxComp;
 
 	int32					m_GoalTotalHP = 10;
 	int32					m_GoalHP = 10;
+
+	UPROPERTY()
+	TArray<class ATargetPoint*>	m_PatrolPoints;
+
+
 };

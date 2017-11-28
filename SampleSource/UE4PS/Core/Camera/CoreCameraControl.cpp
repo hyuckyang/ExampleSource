@@ -58,8 +58,8 @@ void ACoreCameraControl::InitCameraParameter()
 	this->m_bRotateCam = false;
 	this->m_fCamDistMin = 256.f;
 	this->m_fCamDistMax = 1024.f;
-	this->m_fCamDist = 512.f;
-	this->m_fCamPitch = 45.f;
+	this->m_fCamDist = 637.f;
+	this->m_fCamPitch = 20.f;
 	this->m_fCamYaw = 0.f;
 
 	//

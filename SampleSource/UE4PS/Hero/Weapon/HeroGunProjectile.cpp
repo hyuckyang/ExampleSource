@@ -45,6 +45,22 @@ void AHeroGunProjectile::Tick(float DeltaTime)
 void AHeroGunProjectile::SetCoreCharcter(ACoreActCharacter* coreCharcter)
 {
 	m_MineCoreAct = coreCharcter;
+
+	
+
+	if (m_TargetedActs.Num() == 0) return;
+	for (int loop = 0, max = m_TargetedActs.Num(); loop < max; ++loop)
+	{
+		ACoreActCharacter* coreAct = m_TargetedActs[loop];
+
+		if (m_MineCoreAct->IsEnermy(coreAct))
+		{
+			coreAct->ReceivedAttackDamage(m_MineCoreAct->m_PointMeleeAttack);
+			Destroy();
+		}
+	}
+
+	m_TargetedActs.Empty();
 }
 
 void AHeroGunProjectile::SetProjectileVelocity(const FVector& velocityValue)
@@ -57,7 +73,28 @@ void AHeroGunProjectile::SetProjectileVelocity(const FVector& velocityValue)
 void AHeroGunProjectile::OnInColliderBeginOverlap(class UPrimitiveComponent* overlappedComp, class AActor* otherActor, class UPrimitiveComponent* otherComp,
 	int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweeppResult)
 {
-	if (m_MineCoreAct == nullptr) { return; }
+
+	//UE_LOG(LogClass, Log, TEXT("otherActor name %s."), *(otherActor->GetName()));
+	if (otherActor != nullptr) 
+	{
+		ACoreActCharacter* coreAct = Cast<ACoreActCharacter>(otherActor);
+		
+		if (coreAct != nullptr)
+		{
+			if (m_MineCoreAct == nullptr) 
+			{
+				m_TargetedActs.Emplace(coreAct);
+				return;
+			}
+			if (m_MineCoreAct->IsEnermy(coreAct))
+			{
+				coreAct->ReceivedAttackDamage(m_MineCoreAct->m_PointMeleeAttack);
+			}
+		}
+	}
+
+
+	/*if (m_MineCoreAct == nullptr) { return; }
 
 	if (m_MineCoreAct !=nullptr && otherActor != nullptr)
 	{
@@ -70,7 +107,7 @@ void AHeroGunProjectile::OnInColliderBeginOverlap(class UPrimitiveComponent* ove
 				coreAct->ReceivedAttackDamage(m_MineCoreAct->m_PointMeleeAttack);
 			}
 		}
-	}
+	}*/
 
 	Destroy();
 }

@@ -76,6 +76,8 @@ enum class eStateID : uint8
 	/*
 	Unique
 	*/
+	PATROL, // 순찰 - Hero AI
+
 	DEATH, // 
 	SLEEP, // 게임 끝났을 때
 	MAX,

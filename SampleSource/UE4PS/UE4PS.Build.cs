@@ -7,8 +7,9 @@ public class UE4PS : ModuleRules
 	public UE4PS(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG" });
+
+        // https://answers.unrealengine.com/questions/429455/link-errors-in-ubttasknode-classes.html 참조 . GameplayTasks 추가 안하면 에러 떨어짐.
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "AIModule", "GameplayTasks" });
 
 		//PrivateDependencyModuleNames.AddRange(new string[] {  });
 

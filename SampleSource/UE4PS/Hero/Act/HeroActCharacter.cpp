@@ -41,12 +41,13 @@ void AHeroActCharacter::BeginPlay()
 	m_ControlID		= eHeorControlID::AUTO;
 	m_TeamID		= eTeamID::BLUE;
 	
-	m_SightDist = 200.f;
+	m_AttackDist = 500.f;
+	m_SightDist  = 800.f;
 	m_SightComp->SetSightDistance(m_SightDist);
 	/*m_Sight->SetSightDistance(m_SightDist);*/
 
 	m_HAIController = Cast<AHeroAIController>(GetController());
-	SetHeroControlID(m_ControlID);
+	
 
 	RandomCustomizing();
 	RandomNames();
@@ -56,8 +57,6 @@ void AHeroActCharacter::BeginPlay()
 	//
 	// USkeletalMeshComponent* skel = FindComponentByClass<USkeletalMeshComponent>();
 	//
-
-	
 
 	m_PointSMMesh = FindComponentByClass<UStaticMeshComponent>();
 	if (m_PointSMMesh != nullptr) m_PointSMMesh->SetVisibility(false);
@@ -69,10 +68,14 @@ void AHeroActCharacter::BeginPlay()
 	m_GunWeapon		->SetActorRotation(GetActorRotation());
 	m_GunWeapon		->SetCoreCharcter(this);
 
-	AddState(eStateID::IDLE, NewObject<UHeroActIdleState>());
-	AddState(eStateID::MOVE, NewObject<UHeroActMoveState>());
+	AddState(eStateID::IDLE,	NewObject<UHeroActIdleState>());
+	AddState(eStateID::MOVE,	NewObject<UHeroActMoveState>());
+	AddState(eStateID::PATROL,	NewObject<UHeroActPatrolState>());
+	AddState(eStateID::TARGET,	NewObject<UHeroActTargetState>());
+	AddState(eStateID::ATTK,	NewObject<UHeroActAttackState>());
 
-	ChangeState(eStateID::IDLE);
+	SetHeroControlID(m_ControlID);
+	//ChangeState(eStateID::IDLE);
 	
 }
 
@@ -101,19 +104,25 @@ void AHeroActCharacter::ChangeState(eStateID stateID, void* arg1, void* arg2)
 {
 	Super::ChangeState(stateID, arg1, arg2);
 
-	UCoreActState* state = this->FindState(stateID);
+	UCoreActState* state = FindState(stateID);
 	if (state == nullptr) return;
 
 	eStateID oldState = eStateID::NONE;
-	if (this->m_CurState != nullptr) 
+	if (m_CurState != nullptr) 
 	{
 		// 어느 상태로 가는지 알려줌
 		oldState = m_CurState->GetStateID();
-		this->m_CurState->OnExit(stateID);
+		m_CurState->OnExit(stateID);
 	}
 	
-	this->m_CurState = state;
-	this->m_CurState->OnExecute(oldState, arg1, arg2);
+	m_CurState = state;
+	m_CurState->OnExecute(oldState, arg1, arg2);
+
+	// AI 동기화.
+	if (m_HAIController != nullptr) 
+	{
+		m_HAIController->SetChangeStateID(stateID);
+	}
 }
 
 void AHeroActCharacter::SetHeroControlID(eHeorControlID controlID) 
@@ -132,7 +141,7 @@ void AHeroActCharacter::SetHeroControlID(eHeorControlID controlID)
 		m_HAIController->StartBehaviorTree(this);
 
 		// 임시 함수.
-		m_HAIController->SetChangeStateID(eStateID::PATROL);
+		ChangeState(eStateID::PATROL);
 		break;
 	}
 	m_ControlID = controlID;

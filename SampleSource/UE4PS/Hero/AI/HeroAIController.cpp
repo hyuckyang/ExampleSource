@@ -22,7 +22,6 @@ AHeroAIController::AHeroAIController(const class FObjectInitializer& objectiniti
 {
 	m_HeroBTComp = objectinitializer.CreateDefaultSubobject<UBehaviorTreeComponent>(this, TEXT("HeroBTComp"));
 	m_HeroBBComp = objectinitializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("HeroBBComp"));
-
 }
 
 /*
@@ -48,13 +47,11 @@ void AHeroAIController::UnPossess()
 void AHeroAIController::StartBehaviorTree(APawn* pawn)
 {
 	AHeroActCharacter* hero = Cast<AHeroActCharacter>(pawn);
-	if (hero)
-	{
-		if (hero->m_HeroAIBT == nullptr) return;
+	if (hero == nullptr) return;
+	if (hero->m_HeroAIBT == nullptr) return;
 
-		m_HeroBBComp->InitializeBlackboard(*(hero->m_HeroAIBT->BlackboardAsset));
-		m_HeroBTComp->StartTree(*(hero->m_HeroAIBT));
-	}
+	m_HeroBBComp->InitializeBlackboard(*(hero->m_HeroAIBT->BlackboardAsset));
+	m_HeroBTComp->StartTree(*(hero->m_HeroAIBT));
 }
 
 /*
@@ -93,5 +90,4 @@ void AHeroAIController::SetChangeStateID(eStateID stateID)
 	{
 		m_HeroBBComp->SetValueAsEnum(FName("eCurrentState"), (uint8)stateID);
 	}
-
 }

@@ -58,4 +58,6 @@ protected:
 
 	int						m_WaveStandBy			= 3;
 
+	int testTick = 0;
+
 };

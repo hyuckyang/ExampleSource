@@ -60,7 +60,7 @@ void URobotActMoveState::OnExecute(eStateID eState, void* arg1, void* arg2)
 {
 	Super::OnExecute(eState, arg1, arg2);
 	
-	// UE_LOG(LogClass, Log, TEXT("RobotActState Move || X - %f / X - %f / X - %f"), m_RobotActor->GetGoalActor()->GetActorLocation().X, m_RobotActor->GetGoalActor()->GetActorLocation().Y, m_RobotActor->GetGoalActor()->GetActorLocation().Z);
+	UE_LOG(LogClass, Log, TEXT("RobotActState Move || X - %f / X - %f / X - %f"), m_RobotActor->GetGoalActor()->GetActorLocation().X, m_RobotActor->GetGoalActor()->GetActorLocation().Y, m_RobotActor->GetGoalActor()->GetActorLocation().Z);
 
 	// AI 컨트롤에 넘긴다.
 	m_RobotAIControl->SetMoveToGoalVector(m_RobotActor->GetGoalActor()->GetActorLocation());
@@ -189,7 +189,7 @@ void URobotActReturnState::OnLoop()
 	
 	// 리턴 중 타겟이 시야에서 사라지면 
 	// 그냥 다시 무브로 넘어거 골로 간다.
-	if (targetActor->m_SightComp->IsInSightToCharacter(targetActor))
+	if (!targetActor->m_SightComp->IsInSightToCharacter(targetActor))
 	{
 		m_RobotActor->ChangeState(eStateID::MOVE);
 		return;

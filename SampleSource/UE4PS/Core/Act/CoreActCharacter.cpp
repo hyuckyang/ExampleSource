@@ -155,9 +155,17 @@ void ACoreActCharacter::OnUpdateToLocateWithNavi(FVector locate)
 	naviSys->SimpleMoveToLocation(this->GetController(), locate);
 }
 
-void ACoreActCharacter::OnUpdateToRocate(float rotateSpeed)
+void ACoreActCharacter::OnUpdateTargetToRotate(AActor* target, float rotateSpeed)
 {
+	FVector toPlayer = target->GetActorLocation() - GetActorLocation();
+	toPlayer.Z = 0.f;
 
+	toPlayer.Normalize();
+
+	SetActorRelativeRotation(FMath::RInterpTo(	GetActorRotation(),
+												toPlayer.Rotation(),
+												GetWorld()->GetDeltaSeconds(),
+												rotateSpeed));
 }
 
 /*

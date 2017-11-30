@@ -11,6 +11,7 @@
 #include "HeroActCharacter.generated.h"
 
 DECLARE_DELEGATE_OneParam(SwitcherWeaponTriggerDelegate, eWeaponTriggerID);
+DECLARE_DELEGATE_OneParam(SelectCharacterDelegate, bool);
 
 class AHeroGunWeapon;
 class UStaticMeshComponent;
@@ -22,7 +23,8 @@ class UE4PS_API AHeroActCharacter : public ACoreActCharacter
 {
 	GENERATED_BODY()
 
-	SwitcherWeaponTriggerDelegate m_switcherWTriggerDele;
+	SwitcherWeaponTriggerDelegate	m_switcherWTriggerDele;
+	SelectCharacterDelegate			m_selectCharacterDele;
 
 public:
 
@@ -58,6 +60,9 @@ public:
 	//
 	template<typename T>
 	void SwitcherWTriggerFuncBind(UObject* obj, void (T::*funcPoint)(eWeaponTriggerID)) { m_switcherWTriggerDele.BindUObject(Cast<T>(obj), funcPoint); }
+
+	template<typename T>
+	void SelectCharacterFuncBind(UObject* obj, void (T::*funcPoint)(bool)) { m_selectCharacterDele.BindUObject(Cast<T>(obj), funcPoint); }
 
 	// AI
 	AHeroAIController*  GetHeroAIContol() { return this->m_HAIController; }

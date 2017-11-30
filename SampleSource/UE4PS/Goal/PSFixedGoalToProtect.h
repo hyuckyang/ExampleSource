@@ -36,6 +36,8 @@ public:
 
 	// void TestFunc();
 
+	void StrikedToDamage(AActor* strikeActor);
+
 	// Patrol. .. 
 	void PatrolPointCreate();
 

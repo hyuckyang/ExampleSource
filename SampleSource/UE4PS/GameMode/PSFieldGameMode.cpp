@@ -28,7 +28,7 @@ void APSFieldGameMode::BeginPlay()
 	m_HeroControl->SetHeroSelected(heroActor);
 
 	
-	return;
+	// return;
 
 
 	waveTicks = 0.f;
@@ -39,13 +39,13 @@ void APSFieldGameMode::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (testTick == 3) 
+	/*if (testTick == 3) 
 	{
 		m_psGameInstance->OnWaveCreateRobots(1);
 	}
 	testTick++;
 
-	return;
+	return;*/
 
 	if (m_WaveTypeID != eWaveTypeID::END) 
 	{
@@ -106,8 +106,6 @@ void APSFieldGameMode::WaveFlowFunc(float tick)
 	{
 		case eWaveTypeID::STANDBY:
 		{
-			
-
 			if (waveTicks >= m_WaveStandByTimeTick)
 			{
 				// UE_LOG(LogClass, Log, TEXT("eWaveTypeID::STANDBY OUT"));

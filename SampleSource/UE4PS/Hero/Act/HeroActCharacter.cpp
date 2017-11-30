@@ -152,8 +152,12 @@ void AHeroActCharacter::SetHeroControlID(eHeorControlID controlID)
 */
 void AHeroActCharacter::SetSelected(bool bVisible)
 {
-	if (m_PointSMMesh == nullptr) return;
-	m_PointSMMesh->SetVisibility(bVisible, true);
+	/*if (m_PointSMMesh == nullptr) return;
+	m_PointSMMesh->SetVisibility(bVisible, true);*/
+
+	m_selectCharacterDele.ExecuteIfBound(bVisible);
+
+	
 }
 
 /*

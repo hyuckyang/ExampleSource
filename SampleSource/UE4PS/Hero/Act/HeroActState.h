@@ -10,6 +10,7 @@
 class AHeroActControl;
 class AHeroActCharacter;
 class AHeroAIController;
+class ACoreActCharacter;
 /**
  * 
  */
@@ -113,6 +114,7 @@ public:
 	void OneFrameFire();
 
 protected:
-	class ACoreActCharacter*	targetActor;
+	ACoreActCharacter*			targetActor;
 	FTimerHandle				fireTimeHandle;
+	float						fireTick		= 0.f;
 };

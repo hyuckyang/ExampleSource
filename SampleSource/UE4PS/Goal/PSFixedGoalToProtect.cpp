@@ -51,18 +51,7 @@ void APSFixedGoalToProtect::Tick(float DeltaTime)
 void APSFixedGoalToProtect::OnInColliderBeginOverlap(UPrimitiveComponent* overlappedComp, AActor* otherActor,
 													 UPrimitiveComponent* otherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweeppResult)
 {
-	if (!IsValid(otherActor)) return;
-	
-	ARobotActCharacter* robotAct = Cast<ARobotActCharacter>(otherActor);
-	if (!IsValid(robotAct)) return;
-
-	
-	robotAct->OnDeath();
-	
-
-	// HP
-	m_GoalHP--;
-	m_goalUpdateDelegate.Broadcast(m_GoalHP, m_GoalTotalHP);
+	StrikedToDamage(otherActor);
 }
 
 /*
@@ -71,6 +60,30 @@ void APSFixedGoalToProtect::OnInColliderEndOverlap(UPrimitiveComponent* overlapp
 												   int32 otherBodyIndex)
 {
 	
+}
+
+/*
+*/
+void APSFixedGoalToProtect::StrikedToDamage(AActor* strikeActor)
+{
+	if (!IsValid(strikeActor))
+	{
+		UE_LOG(LogClass, Log, TEXT("!IsValid(strikeActor)"));
+		return;
+	}
+
+	ARobotActCharacter* robotAct = Cast<ARobotActCharacter>(strikeActor);
+	if (!IsValid(robotAct)) 
+	{
+		UE_LOG(LogClass, Log, TEXT("!IsValid(robotAct)"));
+		return;
+	}
+
+	robotAct->OnDeath();
+
+	// HP
+	m_GoalHP--;
+	m_goalUpdateDelegate.Broadcast(m_GoalHP, m_GoalTotalHP);
 }
 
 /*

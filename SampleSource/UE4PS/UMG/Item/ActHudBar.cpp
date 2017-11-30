@@ -107,21 +107,33 @@ void UActHudBar::AddToCharacterInfo(ACoreActCharacter* character)
 	if (m_ActNameTxt == nullptr)
 		m_ActNameTxt = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Name_TBlock")));
 
+	if (m_ActRNameTxt == nullptr)
+		m_ActRNameTxt = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Name_RBlock")));
+
+	
+
+	character->ReceiveDamageFuncBind(this, &UActHudBar::ToDamageShow);
+
 	if (character->GetCurrentActorTypeID() == eActorTypeID::HERO) 
 	{
 		AHeroActCharacter* hero = Cast<AHeroActCharacter>(character);
 		if (hero != nullptr) 
 		{
 			m_ActNameTxt->SetText(FText::FromString(hero->GetName()));
+			m_ActRNameTxt->SetText(FText::FromString(hero->GetName()));
+
+			hero->SelectCharacterFuncBind(this, &UActHudBar::SelectToItem);
 		}
 	}
 	else
 	{
 		m_ActNameTxt->SetText(FText::GetEmpty());
+		m_ActRNameTxt->SetText(FText::GetEmpty());
 	}
+	SelectToItem(false);
+	
 
-	//
-	character->ReceiveDamageFuncBind(this, &UActHudBar::ToDamageShow);
+	//character->SelectCharacterFuncBind(this, &UActHudBar::SelectToItem);
 	//
 
 	m_psGameInstance = Cast<UPSGameInstance>(character->GetGameInstance());
@@ -136,3 +148,10 @@ void UActHudBar::AddToParentPanel(UPanelWidget* panel)
 	m_CanvasSlot = Cast<UCanvasPanelSlot>(panel->AddChild(this));
 }
 
+void UActHudBar::SelectToItem(bool bSelect)
+{
+	if (m_SelectSwitcher == nullptr)
+		m_SelectSwitcher = Cast<UWidgetSwitcher>(WidgetTree->FindWidget(TEXT("WSwitcher")));
+
+	m_SelectSwitcher->SetActiveWidgetIndex(bSelect == true ? 1 : 0);
+}

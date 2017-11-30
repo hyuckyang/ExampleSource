@@ -8,9 +8,10 @@
 #include "Runtime/UMG/Public/UMGStyle.h"
 #include "Runtime/UMG/Public/Slate/SObjectWidget.h"
 #include "Runtime/UMG/Public/IUMGModule.h"
-#include "Runtime/UMG/Public/Components/ProgressBar.h"
 #include "Runtime/UMG/Public/Components/TextBlock.h"
 #include "Runtime/UMG/Public/Blueprint/UserWidget.h"
+#include "Runtime/UMG/Public/Components/ProgressBar.h"
+#include "Runtime/UMG/Public/Components/WidgetSwitcher.h"
 #include "ActHudBar.generated.h"
 
 class APSPlayerController;
@@ -39,6 +40,7 @@ public:
 
 	void ToDamageShow(int32 damageValue);
 
+	void SelectToItem(bool bSelect);
 protected:
 	
 	class UPSGameInstance*	m_psGameInstance		= nullptr;
@@ -46,7 +48,11 @@ protected:
 
 	UPanelWidget*			m_ParentPanel;
 	UCanvasPanelSlot*		m_CanvasSlot;
+	
+	UWidgetSwitcher*		m_SelectSwitcher;
 	UTextBlock*				m_ActNameTxt;
+	UTextBlock*				m_ActRNameTxt;
+
 	UProgressBar*			m_ProgressHP;
 
 

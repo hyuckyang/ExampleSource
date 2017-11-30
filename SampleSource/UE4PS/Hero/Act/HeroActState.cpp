@@ -198,41 +198,44 @@ void UHeroActAttackState::OnExecute(eStateID state, void* arg1, void* arg2)
 {
 	Super::OnExecute(state, arg1, arg2);
 
-	fireTimeHandle.Invalidate();
+	/*fireTimeHandle.Invalidate();*/
 	m_HeroActor->GetWorldTimerManager().ClearTimer(fireTimeHandle);
 
 	if (arg1 != nullptr) targetActor = (ACoreActCharacter*)arg1;
 
-	switch (m_HeroActor->GetHeroControlID())
-	{
+	m_HeroAI->StopMovement();
 
-		case eHeorControlID::MANUAL:
-		case eHeorControlID::SEMI_AUTO:
-		{
-			// AI 아님. .. 추후에.. 처리 예정
-			break;
-		}
+	fireTick = 0.f;
 
-		default:
-		{
-			switch (m_HeroActor->GetWeaponTriggerID())
-			{
-				case eWeaponTriggerID::SEMIAUTO:
-				case eWeaponTriggerID::BURST:
-				{
-					OneFrameFire();
+	//switch (m_HeroActor->GetHeroControlID())
+	//{
 
-					// UE_LOG(LogClass, Log, TEXT("OneFrameFire Start"));
-					break;
-				}
-			}
-			break;
-		}
-	}
+	//	case eHeorControlID::MANUAL:
+	//	case eHeorControlID::SEMI_AUTO:
+	//	{
+	//		// AI 아님. .. 추후에.. 처리 예정
+	//		break;
+	//	}
+
+	//	default:
+	//	{
+	//		switch (m_HeroActor->GetWeaponTriggerID())
+	//		{
+	//			case eWeaponTriggerID::SEMIAUTO:
+	//			case eWeaponTriggerID::BURST:
+	//			{
+	//				OneFrameFire();
+
+	//				// UE_LOG(LogClass, Log, TEXT("OneFrameFire Start"));
+	//				break;
+	//			}
+	//		}
+	//		break;
+	//	}
+	//}
 
 	// 임시. 비헤이비어 트리 더 공부해서 아래 함수 삭제해야 함
 	// m_HeroAI->SetMoveToEnemyRobot(nullptr);
-
 	//
 	// m_HeroAI->StopMovement();
 }
@@ -255,15 +258,43 @@ void UHeroActAttackState::OnLoop()
 		return;
 	}
 
-	/*
-	*/
-	if (m_HeroActor->GetHeroControlID() != eHeorControlID::AUTO) return;
-	if (m_HeroActor->GetWeaponTriggerID() != eWeaponTriggerID::FULLAUTO) return;
+	m_HeroActor->OnUpdateTargetToRotate(targetActor, 10.f);
 
-	m_HeroActor->OnFire(true);
+	if (m_HeroActor->GetHeroControlID() == eHeorControlID::AUTO)
+	{
+		switch (m_HeroActor->GetWeaponTriggerID())
+		{
+			case eWeaponTriggerID::SEMIAUTO:
+			case eWeaponTriggerID::BURST:
+			{
+				//
+				fireTick += m_HeroActor->GetWorld()->GetDeltaSeconds();
+				if (fireTick > 1.5f) 
+				{
+					fireTick = 0.f;
+					m_HeroActor->OnFire(true);
 
-	
-	
+					// UE_LOG(LogClass, Log, TEXT("One FrameFire"));
+					return;
+				}
+				break;
+			}
+			default:
+			{
+				m_HeroActor->OnFire(true);
+
+				// UE_LOG(LogClass, Log, TEXT("Tick FrameFire"));
+				break;
+			}
+		}
+	}
+
+	///*
+	//*/
+	//if (m_HeroActor->GetHeroControlID() != eHeorControlID::AUTO) return;
+	//if (m_HeroActor->GetWeaponTriggerID() != eWeaponTriggerID::FULLAUTO) return;
+
+	//m_HeroActor->OnFire(true);
 }
 
 void UHeroActAttackState::OnExit(eStateID state)
@@ -290,7 +321,7 @@ void UHeroActAttackState::OneFrameFire()
 	m_HeroActor->OnFire(false);
 
 	m_HeroActor->GetWorldTimerManager().SetTimer(
-		fireTimeHandle, this, &UHeroActAttackState::OneFrameFire, 1.f, false);
+		fireTimeHandle, this, &UHeroActAttackState::OneFrameFire, 2.f, false);
 
 	
 

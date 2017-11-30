@@ -33,7 +33,7 @@ void URobotActState::SetCharacter(ACoreActCharacter* character)
 void URobotActIdleState::OnExecute(eStateID eState, void* arg1, void* arg2)
 {
 	Super::OnExecute(eState, arg1, arg2);
-	UE_LOG(LogClass, Log, TEXT("Robot IDLE"));
+	// UE_LOG(LogClass, Log, TEXT("Robot IDLE"));
 }
 
 void URobotActIdleState::OnLoop()
@@ -78,7 +78,6 @@ void URobotActMoveState::OnLoop()
 
 		// 타겟 객체를 넘긴다
 		m_RobotActor->ChangeState(eStateID::TARGET, core);
-
 		// UE_LOG(LogClass, Log, TEXT("RobotActState Move Next Target"));
 	}
 }
@@ -95,7 +94,7 @@ void URobotActTargetState::OnExecute(eStateID eState, void* arg1, void* arg2)
 {
 	Super::OnExecute(eState, arg1, arg2);
 
-	UE_LOG(LogClass, Log, TEXT("Robot Target"));
+	// UE_LOG(LogClass, Log, TEXT("Robot Target"));
 
 	if (arg1 != nullptr) 
 	{
@@ -194,6 +193,8 @@ void URobotActReturnState::OnLoop()
 		m_RobotActor->ChangeState(eStateID::MOVE);
 		return;
 	}	
+
+	
 }
 
 void URobotActReturnState::OnExit(eStateID state)
@@ -214,21 +215,20 @@ void URobotActAttackState::OnExecute(eStateID eState, void* arg1, void* arg2)
 
 	m_RobotActor->PlayAttackAnimStart();
 
-	UE_LOG(LogClass, Log, TEXT("Robot Attack"));
+	// UE_LOG(LogClass, Log, TEXT("Robot Attack"));
 }
 
 void URobotActAttackState::OnLoop()
 {
 	Super::OnLoop();
 
-	if (targetActor == nullptr) return;
+	if (!IsValid(targetActor)) return;
 
 	float dist = FVector::Distance(m_RobotActor->GetActorLocation(), returnToLocate);
 	if (dist > 800.f || targetActor->GetCurrentStateID() == eStateID::DEATH)
 	{
-		// 함수화.. 
+		// 함수화.. 해야지.. 귀찮...
 		// 돌아가라..
-		
 		m_RobotActor->ChangeState(eStateID::RETURN, &returnToLocate, targetActor);
 		m_RobotAIControl->SetMoveToHeroActor(nullptr);
 		return;
@@ -240,11 +240,12 @@ void URobotActAttackState::OnLoop()
 	{
 		
 		m_RobotActor->ChangeState(eStateID::TARGET, targetActor, &returnToLocate);
-		
 		return;
-
 	}
 
+	//
+	m_RobotActor->OnUpdateTargetToRotate(targetActor, 10.f);
+	
 }
 
 void URobotActAttackState::OnExit(eStateID state)
@@ -294,7 +295,7 @@ void URobotActSleepState::OnExecute(eStateID eState, void* arg1, void* arg2)
 {
 	Super::OnExecute(eState, arg1, arg2);
 
-	UE_LOG(LogClass, Log, TEXT("Robot Sleep"));
+	// UE_LOG(LogClass, Log, TEXT("Robot Sleep"));
 
 	m_RobotActor->UnPossessed();
 }

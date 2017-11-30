@@ -9,6 +9,7 @@
 #include "CoreActCharacter.generated.h"
 
 DECLARE_DELEGATE_OneParam(ReceiveDamageDelegate, int32);
+DECLARE_DELEGATE_OneParam(SelectCharacterDelegate, bool);
 
 class UWidgetComponent;
 class UCoreActSightSphereComponent;
@@ -26,7 +27,8 @@ class UE4PS_API ACoreActCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	ReceiveDamageDelegate m_receiveDamageDele;
+	ReceiveDamageDelegate	m_receiveDamageDele;
+	
 
 /*
  * 상태 관련 함수 및 변수 들
@@ -79,8 +81,9 @@ public:
 	void OnUpdateToLocateWithNavi(FVector locate);
 	
 	// 회전 함수
-	void OnUpdateToRocate(float rotateSpeed = 0.f);
+	void OnUpdateTargetToRotate(AActor* target, float rotateSpeed = 0.f);
 	
+
 	// 전방 타겟 각도 범위 체크
 	bool IsInAngle(AActor* target, float angle);
 

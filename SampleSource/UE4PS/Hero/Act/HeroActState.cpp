@@ -269,7 +269,7 @@ void UHeroActAttackState::OnLoop()
 			{
 				//
 				fireTick += m_HeroActor->GetWorld()->GetDeltaSeconds();
-				if (fireTick > 1.5f) 
+				if (fireTick > 1.f) 
 				{
 					fireTick = 0.f;
 					m_HeroActor->OnFire(true);
@@ -326,6 +326,26 @@ void UHeroActAttackState::OneFrameFire()
 	
 
 	// UE_LOG(LogClass, Log, TEXT("OneFrameFire"));
+}
+
+/*
+ Sleep
+*/
+void UHeroActSleepState::OnExecute(eStateID state, void* arg1, void* arg2)
+{
+	Super::OnExecute(state, arg1, arg2);
+
+	m_HeroActor->UnPossessed();
+}
+
+void UHeroActSleepState::OnLoop()
+{
+	Super::OnLoop();
+}
+
+void UHeroActSleepState::OnExit(eStateID state)
+{
+	Super::OnExit(state);
 }
 
 

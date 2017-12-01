@@ -118,3 +118,18 @@ protected:
 	FTimerHandle				fireTimeHandle;
 	float						fireTick		= 0.f;
 };
+
+/*
+
+ */
+UCLASS()
+class UE4PS_API UHeroActSleepState : public UHeroActState
+{
+	GENERATED_BODY()
+
+public:
+	void OnExecute(eStateID eState, void* arg1 = nullptr, void* arg2 = nullptr);
+	void OnLoop();
+	void OnExit(eStateID eState);
+};
+

@@ -73,6 +73,7 @@ void AHeroActCharacter::BeginPlay()
 	AddState(eStateID::PATROL,	NewObject<UHeroActPatrolState>());
 	AddState(eStateID::TARGET,	NewObject<UHeroActTargetState>());
 	AddState(eStateID::ATTK,	NewObject<UHeroActAttackState>());
+	AddState(eStateID::SLEEP,	NewObject<UHeroActSleepState>());
 
 	SetHeroControlID(m_ControlID);
 	//ChangeState(eStateID::IDLE);

@@ -21,63 +21,20 @@ EBTNodeResult::Type URobotBTTask_StrikeGoalActor::ExecuteTask(UBehaviorTreeCompo
 {
 	if (GetWorld() == nullptr) return EBTNodeResult::Failed;
 
+	return EBTNodeResult::Failed;
+
 	UPSGameInstance* psGameInstance = Cast<UPSGameInstance>(GetWorld()->GetGameInstance());
 	if (psGameInstance == nullptr) return EBTNodeResult::Failed;
 	if (psGameInstance->GetGoalActor() == nullptr) return EBTNodeResult::Failed;
 
-	UObject* obj = OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName("SelfActor"));
-	if (!IsValid(obj))
-	{
-		UE_LOG(LogClass, Log, TEXT("obj == nullptr"));
-		return EBTNodeResult::Failed;
-	}
-
-	ARobotActCharacter* robot = Cast<ARobotActCharacter>(obj);
-	if (robot == nullptr)
-	{
-		UE_LOG(LogClass, Log, TEXT("robot == nullptr"));
-		return EBTNodeResult::Failed;
-	}
-
-	psGameInstance->GetGoalActor()->StrikedToDamage(robot);
-
-	/*if (!IsValid(OwnerComp.GetOwner())) return EBTNodeResult::Failed;
-
-	if (IsValid(OwnerComp.GetOwner()))
-	{
-		UE_LOG(LogClass, Log, TEXT("OwnerComp.GetOwner() name %s"), *(OwnerComp.GetOwner()->GetName()) );
-		
-	}
-
 	ARobotAIController* robotAI = Cast<ARobotAIController>(OwnerComp.GetAIOwner());
-	if (robotAI == nullptr)
-	{
-		UE_LOG(LogClass, Log, TEXT("robotAI == nullptr"));
-		return EBTNodeResult::Failed;
-	}
-
-	if (robotAI->GetOwner() == nullptr)
-	{
-		UE_LOG(LogClass, Log, TEXT("robotAI->GetOwner == nullptr"));
-	}
-	
-	ARobotActCharacter* robot = Cast<ARobotActCharacter>(robotAI->GetOwner());
-	if (robot == nullptr) 
-	{
-		UE_LOG(LogClass, Log, TEXT("robot == nullptr"));
-		return EBTNodeResult::Failed;
-	}
+	if (robotAI == nullptr) return EBTNodeResult::Failed;
 
 	
-
-	UE_LOG(LogClass, Log, TEXT("Strike Robot Actor"));
-	psGameInstance->GetGoalActor()->StrikedToDamage(robot);*/
-
-	/*ARobotActCharacter* robot = Cast<ARobotActCharacter>(OwnerComp.GetOwner());
+	ARobotActCharacter* robot = Cast<ARobotActCharacter>(robotAI->GetPawn());
 	if (robot == nullptr) return EBTNodeResult::Failed;
 
-	ARobotAIController* robotAI = Cast<ARobotAIController>(OwnerComp.GetAIOwner());
-	if (robotAI == nullptr) return EBTNodeResult::Failed;*/
+	psGameInstance->GetGoalActor()->StrikedToDamage(robot);
 
 	return EBTNodeResult::Succeeded;
 }

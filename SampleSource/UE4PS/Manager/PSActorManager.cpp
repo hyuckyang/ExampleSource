@@ -118,7 +118,7 @@ void UPSActorManager::TotalActChangeState(eStateID stateID)
 {
 	if (m_CoreActors.Num() == 0) return;
 
-	return;
+	// return;
 
 	for (int loop = 0, max = m_CoreActors.Num(); loop < max; loop++) 
 	{
